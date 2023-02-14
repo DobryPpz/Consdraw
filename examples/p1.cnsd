@@ -1,0 +1,11 @@
+width 80
+height 60
+begin triangle
+      o
+     ooo
+    ooooo
+end
+begin square
+[][]
+[][]
+end
