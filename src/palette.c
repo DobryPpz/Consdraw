@@ -8,50 +8,7 @@ struct palette *new_palette(){
     p->root = NULL;
     return p;
 }
-void rot_left(struct palette *p, struct drawing *axis, struct drawing *parent){
-    if(p!=NULL && axis!=NULL){
-        struct drawing *right_subtree = axis->right;
-        if(right_subtree->left!=NULL){
-            axis->right = right_subtree->left;
-        }
-        if(parent==NULL) p->root = right_subtree;
-        else if(parent->left==axis){
-            parent->left = right_subtree;
-        }
-        else{
-            parent->right = right_subtree;
-        }
-        right_subtree->left = axis;
-    }
-}
-void rot_right(struct palette *p, struct drawing *axis, struct drawing *parent){
-    if(p!=NULL && axis!=NULL){
-        struct drawing *left_subtree = axis->left;
-        if(left_subtree->right!=NULL){
-            axis->left = left_subtree->right;
-        }
-        if(parent==NULL) p->root = left_subtree;
-        else if(parent->right==axis){
-            parent->right = left_subtree;
-        }
-        else{
-            parent->left = left_subtree;
-        }
-        left_subtree->right = axis;
-    }
-}
-void left_right(struct palette *p, struct drawing *axis, struct drawing *parent){
-    if(p!=NULL && axis!=NULL){
-        rot_left(p,axis->left,axis);
-        rot_right(p,axis,parent);
-    }
-}
-void right_left(struct palette *p, struct drawing *axis, struct drawing *parent){
-    if(p!=NULL && axis!=NULL){
-        rot_right(p,axis->right,axis);
-        rot_left(p,axis,parent);
-    }
-}
+
 void destroy_tree(struct drawing *d){
     if(d==NULL) return;
     destroy_tree(d->left);
@@ -90,7 +47,30 @@ bool add_drawing(struct palette *p, struct drawing *d){
             return true;
         }
         else{
-
+            bool inserted = false;
+            struct drawing *traverser = p->root;
+            while(!inserted){
+                int cmp = strcmp(d->name,traverser->name);
+                if(cmp<0){
+                    if(traverser->left!=NULL){
+                        traverser = traverser->left;
+                    }
+                    else{
+                        traverser->left = d;
+                        inserted = true;
+                    }
+                }
+                else{
+                    if(traverser->right!=NULL){
+                        traverser = traverser->right;
+                    }
+                    else{
+                        traverser->right = d;
+                        inserted = true;
+                    }
+                }
+            }
+            return true;
         }
     }
     else{
