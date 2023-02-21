@@ -2,6 +2,7 @@
 #define PROGRAM_STATE_H_
 #include <stdio.h>
 #include <scene.h>
+#include <palette.h>
 #include <memory.h>
 
 //menu

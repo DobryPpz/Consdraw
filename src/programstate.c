@@ -20,14 +20,17 @@ void read_menu(FILE *fp, struct context *c){
                     }
                     else{
                         printf("Could not open the file\n");
+                        read_menu(fp,c);
                     }
                 }
                 else{
                     printf("Did not specify a file\n");
+                    read_menu(fp,c);
                 }
             }
             else{
                 printf("Wrong command\n");
+                read_menu(fp,c);
             }
         }
     }
@@ -39,10 +42,18 @@ void read_drawing(FILE *fp, struct context *c){
 
 }
 struct context *new_context(){
-
+    struct context *c = (struct context*)malloc(sizeof(struct context));
+    c->palette = NULL;
+    c->read = NULL;
+    c->scene = NULL;
+    return c;
 }
 void destroy_context(struct context *c){
-
+    if(c!=NULL){
+        if(c->palette!=NULL) destroy_palette(c->palette);
+        if(c->scene!=NULL) destroy_scene(c->scene);
+        free(c);
+    }
 }
 bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
     if(c!=NULL && read!=NULL){
