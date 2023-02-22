@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <scene.h>
 #include <palette.h>
-#include <memory.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 //menu
 //parsing file
