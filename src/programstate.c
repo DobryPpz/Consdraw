@@ -31,7 +31,14 @@ void draw(FILE *fp, char **saveptr, struct context *c){
 }
 void delete(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
-
+    struct drawing *d;
+    if(sscanf(*saveptr,"%s",name)<1){
+        printf("scene element to delete was not specified\n");
+        return;
+    }
+    remove_from_scene(c->scene,name);
+    clear_screen(c->scene);
+    draw_scene(c->scene);
 }
 void menu(FILE *fp, char **saveptr, struct context *c){
 
