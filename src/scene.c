@@ -42,7 +42,7 @@ struct scene *new_scene(int width, int height){
     }
     return s;
 }
-struct element *new_element(int id, int x, int y, int content_height, int content_width, char **content){
+struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content){
     struct element *el = (struct element*)malloc(sizeof(struct element));
     if(el==NULL) return NULL;
     el->id = id;
@@ -54,10 +54,10 @@ struct element *new_element(int id, int x, int y, int content_height, int conten
     el->next = NULL;
     return el;
 }
-struct element *get_element(struct scene *s, int id){
+struct element *get_element(struct scene *s, char *id){
     if(s!=NULL && s->head!=NULL){
         struct element *traverser = s->head;
-        while(traverser!=NULL && traverser->id!=id){
+        while(traverser!=NULL && strcmp(traverser->id,id)!=0){
             traverser = traverser->next;
         }
         return traverser;
@@ -83,15 +83,15 @@ bool add_to_scene(struct scene *s, struct element *el){
         return false;
     }
 }
-bool remove_from_scene(struct scene *s, int id){
+bool remove_from_scene(struct scene *s, char *id){
     if(s!=NULL && s->head!=NULL){
         struct element *traverser = s->head;
-        if(traverser->id==id){
+        if(strcmp(traverser->id,id)==0){
             s->head = s->head->next;
             free(traverser);
             return true;
         }
-        while(traverser->next!=NULL && traverser->next->id!=id){
+        while(traverser->next!=NULL && strcmp(traverser->next->id,id)!=0){
             traverser = traverser->next;
         }
         if(traverser->next==NULL) return false;
@@ -139,6 +139,7 @@ void clear_canvas(struct scene *s){
 void clear_screen(struct scene *s){
     clear_canvas(s);
     draw_scene(s);
+    load_scene(s);
 }
 void clear_scene(struct scene *s){
     if(s!=NULL && s->head!=NULL){

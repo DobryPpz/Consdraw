@@ -17,6 +17,10 @@ struct context{
     void(*read)(FILE*,struct context*);
 };
 
+void draw(FILE *fp, char **saveptr, struct context *c);
+void delete(FILE *fp, char **saveptr, struct context *c);
+void menu(FILE *fp, char **saveptr, struct context *c);
+void end(FILE *fp, char **saveptr, struct context *c);
 void read_menu(FILE *fp, struct context *c);
 void read_parsing(FILE *fp, struct context *c);
 void read_drawing(FILE *fp, struct context *c);

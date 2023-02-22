@@ -1,5 +1,44 @@
 #include <programstate.h>
 
+void draw(FILE *fp, char **saveptr, struct context *c){
+    char name[32] = {'\0'};
+    char relation[32] = {'\0'};
+    char drawing[32] = {'\0'};
+    int x;
+    int y;
+    struct drawing *d;
+    struct element *el;
+    if(sscanf(*saveptr,"%s %s %s %d %d",name,relation,drawing,&x,&y)<5){
+        printf("not enough arguments to function call: draw\n");
+    }
+    else{
+        el = get_element(c->scene,name);
+        if(el!=NULL){
+            printf("the element called like that already exists in the scene\n");
+            return;
+        }
+        if(strcmp(relation,"=")!=0) return;
+        d = get_drawing(c->palette,drawing);
+        if(d==NULL){
+            printf("the is no drawing with this name in palette memory\n");
+            return;
+        }
+        el = new_element(name,x,y,d->content_height,d->content_width,d->content);
+        add_to_scene(c->scene,el);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+    }
+}
+void delete(FILE *fp, char **saveptr, struct context *c){
+    char name[32] = {'\0'};
+
+}
+void menu(FILE *fp, char **saveptr, struct context *c){
+
+}
+void end(FILE *fp, char **saveptr, struct context *c){
+
+}
 void read_menu(FILE *fp, struct context *c){
     size_t linelen = 64;
     char *line = (char*)calloc(linelen,sizeof(char));
@@ -123,7 +162,22 @@ void read_parsing(FILE *fp, struct context *c){
     change_state(c,stdin,read_drawing);
 }
 void read_drawing(FILE *fp, struct context *c){
-
+    //draw t1 = triangle 0 0
+    //draw sex = square 7 7
+    char *token = NULL;
+    int x;
+    int y;
+    size_t linelen = 128;
+    char *line = (char*)calloc(linelen,sizeof(char));
+    char **saveptr;
+    while(getline(&line,&linelen,fp)!=EOF){
+        token = strtok_r(line," \n\t",saveptr);
+        if(strcmp(token,"draw")==0) draw(c,saveptr,c);
+        else if(strcmp(token,"delete")==0) delete(c,saveptr,c);
+        else if(strcmp(token,"menu")==0) menu(c,saveptr,c);
+        else if(strcmp(token,"end")==0) end(c,saveptr,c);
+        memset(line,'\0',linelen);
+    }
 }
 struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
