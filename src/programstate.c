@@ -6,8 +6,8 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     char drawing[32] = {'\0'};
     int x;
     int y;
-    struct drawing *d;
-    struct element *el;
+    struct drawing *d = NULL;
+    struct element *el = NULL;
     if(sscanf(*saveptr,"%s %s %s %d %d",name,relation,drawing,&x,&y)<5){
         printf("not enough arguments to function call: draw\n");
     }
@@ -63,6 +63,28 @@ void end_command(FILE *fp, char **saveptr, struct context *c){
         destroy_context(c);
         c = NULL;
         exit(EXIT_SUCCESS);
+    }
+}
+void move_command(FILE *fp, char **saveptr, struct context *c){
+    if(c!=NULL){
+        char name[32] = {'\0'};
+        struct element *el = NULL;
+        int new_x;
+        int new_y;
+        if(sscanf(*saveptr,"%s %d %d",name,&new_x,&new_y)<3){
+            printf("not enough arguments to function call: move\n");
+        }
+        else{
+            el = get_element(c->scene,name);
+            if(el!=NULL){
+                move_element(el,new_x,new_y);
+                clear_screen(c->scene);
+                draw_scene(c->scene);
+            }
+            else{
+                printf("the element with that name does does not exists in the scene\n");
+            }
+        }
     }
 }
 void read_menu(FILE *fp, struct context *c){
@@ -198,6 +220,7 @@ void read_drawing(FILE *fp, struct context *c){
             token = strtok_r(line," \n\t",&saveptr);
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
+            else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"menu")==0) {
                 menu_command(fp,&saveptr,c);
                 break;
