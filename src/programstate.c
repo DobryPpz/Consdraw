@@ -14,7 +14,7 @@ void draw(FILE *fp, char **saveptr, struct context *c){
     else{
         el = get_element(c->scene,name);
         if(el!=NULL){
-            printf("the element called like that already exists in the scene\n");
+            printf("the element called like that already exists in the scene %s %s\n",name,el->id);
             return;
         }
         if(strcmp(relation,"=")!=0) return;
@@ -24,7 +24,12 @@ void draw(FILE *fp, char **saveptr, struct context *c){
             return;
         }
         el = new_element(name,x,y,d->content_height,d->content_width,d->content);
-        add_to_scene(c->scene,el);
+        if(el==NULL){
+            return;
+        }
+        if(!add_to_scene(c->scene,el)){
+            return;
+        }
         clear_screen(c->scene);
         draw_scene(c->scene);
     }
@@ -41,10 +46,19 @@ void delete(FILE *fp, char **saveptr, struct context *c){
     draw_scene(c->scene);
 }
 void menu(FILE *fp, char **saveptr, struct context *c){
-
+    if(c!=NULL){
+        destroy_palette(c->palette);
+        destroy_scene(c->scene);
+        change_state(c,stdin,read_menu);
+    }
 }
 void end(FILE *fp, char **saveptr, struct context *c){
-
+    if(c!=NULL){
+        destroy_palette(c->palette);
+        destroy_scene(c->scene);
+        destroy_context(c);
+        exit(EXIT_SUCCESS);
+    }
 }
 void read_menu(FILE *fp, struct context *c){
     size_t linelen = 64;
@@ -59,7 +73,6 @@ void read_menu(FILE *fp, struct context *c){
                 if(token!=NULL){
                     handle = fopen(token,"r");
                     if(handle!=NULL){
-                        fclose(fp);
                         change_state(c,handle,read_parsing);
                     }
                     else{
@@ -88,8 +101,8 @@ void read_parsing(FILE *fp, struct context *c){
     char *token = NULL;
     size_t linelen = 128;
     char *line = (char*)calloc(linelen,sizeof(char));
-    char **content;
-    char *name;
+    char **content = NULL;
+    char *name = NULL;
     int content_height;
     int content_width;
     int scene_width;
@@ -159,31 +172,33 @@ void read_parsing(FILE *fp, struct context *c){
             }
             else if(is_reading_shape){
                 content_height++;
-                content = (char**)realloc(content,content_height);
+                content = (char**)realloc(content,content_height*sizeof(char*));
                 content[content_height-1] = (char*)calloc(content_width,sizeof(char));
                 sprintf(content[content_height-1],"%s",token);
             }
         }
         memset(line,'\0',linelen);
     }
+    fclose(fp);
     change_state(c,stdin,read_drawing);
 }
 void read_drawing(FILE *fp, struct context *c){
-    //draw t1 = triangle 0 0
-    //draw sex = square 7 7
     char *token = NULL;
     int x;
     int y;
     size_t linelen = 128;
     char *line = (char*)calloc(linelen,sizeof(char));
-    char **saveptr;
+    char *saveptr = NULL;
     while(getline(&line,&linelen,fp)!=EOF){
-        token = strtok_r(line," \n\t",saveptr);
-        if(strcmp(token,"draw")==0) draw(c,saveptr,c);
-        else if(strcmp(token,"delete")==0) delete(c,saveptr,c);
-        else if(strcmp(token,"menu")==0) menu(c,saveptr,c);
-        else if(strcmp(token,"end")==0) end(c,saveptr,c);
-        memset(line,'\0',linelen);
+        if(strlen(line)>1){
+            token = strtok_r(line," \n\t",&saveptr);
+            if(strcmp(token,"draw")==0) draw(fp,&saveptr,c);
+            else if(strcmp(token,"delete")==0) delete(fp,&saveptr,c);
+            else if(strcmp(token,"menu")==0) menu(fp,&saveptr,c);
+            else if(strcmp(token,"end")==0) end(fp,&saveptr,c);
+            saveptr = NULL;
+            memset(line,'\0',linelen);
+        }
     }
 }
 struct context *new_context(){

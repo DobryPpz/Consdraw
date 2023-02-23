@@ -1,6 +1,4 @@
 #include <scene.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 void destroy_scene(struct scene *s){
     if(s!=NULL){
@@ -39,13 +37,15 @@ struct scene *new_scene(int width, int height){
             destroy_scene(s);
             return NULL;
         }
+        memset(s->canvas[i],' ',s->width);
     }
     return s;
 }
 struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content){
     struct element *el = (struct element*)malloc(sizeof(struct element));
     if(el==NULL) return NULL;
-    el->id = id;
+    el->id = (char*)calloc(strlen(id)+1,sizeof(char));
+    strcpy(el->id,id);
     el->x = x;
     el->y = y;
     el->content_height = content_height;
@@ -60,7 +60,12 @@ struct element *get_element(struct scene *s, char *id){
         while(traverser!=NULL && strcmp(traverser->id,id)!=0){
             traverser = traverser->next;
         }
-        return traverser;
+        if(traverser!=NULL && strcmp(traverser->id,id)==0){
+            return traverser;
+        }
+        else{
+            return NULL;
+        }
     }
     else{
         return NULL;
@@ -108,10 +113,10 @@ void load_scene(struct scene *s){
     if(s!=NULL && s->head!=NULL && s->canvas!=NULL){
         struct element *traverser = s->head;
         while(traverser!=NULL){
-            for(int i=traverser->y;i>=0&&i<traverser->content_height&&i<s->height;i++){
-                for(int j=traverser->x;j>=0&&j<traverser->content_width&&j<s->width;j++){
+            for(int i=traverser->y;i>=0&&i<traverser->content_height+traverser->y&&i<s->height;i++){
+                for(int j=traverser->x;j>=0&&j<traverser->content_width+traverser->x&&j<s->width;j++){
                     char c = traverser->content[i-traverser->y][j-traverser->x];
-                    if(c!='\0' && c!=' ' && c!='\t' && c!='\n'){
+                    if(c!='\0'){
                         s->canvas[i][j] = c;
                     }
                 }
@@ -123,22 +128,26 @@ void load_scene(struct scene *s){
 void draw_scene(struct scene *s){
     if(s!=NULL && s->canvas!=NULL){
         for(int i=0;i<s->height;i++){
-            printf("%s\n",s->canvas[i]);
+            for(int j=0;j<s->width;j++){
+                printf("%c",s->canvas[i][j]);
+            }
+            printf("\n");
         }
     }
 }
 void clear_canvas(struct scene *s){
     if(s!=NULL && s->canvas!=NULL){
         for(int i=0;i<s->height;i++){
-            for(int j=0;j<s->width;i++){
-                s->canvas[i][j] = '\0';
+            for(int j=0;j<s->width;j++){
+                s->canvas[i][j] = ' ';
             }
         }
     }
 }
 void clear_screen(struct scene *s){
     clear_canvas(s);
-    draw_scene(s);
+    // draw_scene(s);
+    system("clear");
     load_scene(s);
 }
 void clear_scene(struct scene *s){
