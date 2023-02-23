@@ -83,17 +83,14 @@ void read_menu(FILE *fp, struct context *c){
                     }
                     else{
                         printf("Could not open the file\n");
-                        // read_menu(fp,c);
                     }
                 }
                 else{
                     printf("Did not specify a file\n");
-                    // read_menu(fp,c);
                 }
             }
             else{
                 printf("Wrong command\n");
-                // read_menu(fp,c);
             }
         }
     }
