@@ -135,12 +135,12 @@ void read_parsing(FILE *fp, struct context *c){
     while(getline(&line,&linelen,fp)!=EOF){
         if(is_reading_shape){
             if(line[0]=='e' && line[1]=='n' && line[2]=='d' && is_reading_shape){
-                    is_reading_shape = false;
-                    struct drawing *d = new_drawing(name,content,content_height,content_width);
-                    add_drawing(c->palette,d);
-                    name = NULL;
-                    content = NULL;
-                    content_height = 0;
+                is_reading_shape = false;
+                struct drawing *d = new_drawing(name,content,content_height,content_width);
+                add_drawing(c->palette,d);
+                name = NULL;
+                content = NULL;
+                content_height = 0;
             }
             else{
                 content_height++;
