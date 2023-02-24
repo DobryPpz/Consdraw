@@ -118,7 +118,7 @@ void load_scene(struct scene *s){
             for(int i=traverser->y;i>=0&&i<traverser->content_height+traverser->y&&i<s->height;i++){
                 for(int j=traverser->x;j>=0&&j<traverser->content_width+traverser->x&&j<s->width;j++){
                     char c = traverser->content[i-traverser->y][j-traverser->x];
-                    if(c!='\0'){
+                    if(c!='\0' && c!=' '){
                         s->canvas[i][j] = c;
                     }
                 }
