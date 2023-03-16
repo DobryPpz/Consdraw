@@ -16,7 +16,25 @@ struct params{
     unsigned char bg_a;
 };
 
-void fill_bg(png_bytep *row_pointers, int width, int height, struct params *p);
-bool write_png_file(char *filename, struct scene *s, struct params *p);
+void fill_bg(png_bytep *row_pointers, 
+    int width, 
+    int height, 
+    struct params *p);
+bool render_character(SFT *instance,
+    SFT_UChar codepoint,
+    SFT_Glyph *glyph_id,
+    SFT_Image image);
+bool put_character(png_bytep *row_pointers, 
+    int width, 
+    int height, 
+    int start_x,
+    int start_y,
+    struct params *p, 
+    unsigned char *bitmap,
+    int bitmap_width,
+    int bitmap_height);
+bool write_png_file(char *filename, 
+    struct scene *s, 
+    struct params *p);
 
 #endif

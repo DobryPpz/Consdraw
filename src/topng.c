@@ -25,7 +25,23 @@ bool write_png_file(char *filename, struct scene *s, struct params *p){
     }
     fill_bg(row_pointers,width,height,p);
     // Putting characters on row_pointers
-    
+    SFT_Font *font = sft_loadfile("/usr/share/fonts/truetype/freefont/FreeMono.ttf");
+    if(!font){
+        printf("Could not load the font\n");
+        return false;
+    }
+    SFT_Glyph glyph_id;
+    SFT instance;
+    SFT_Image image;
+    instance.font = font;
+    instance.xScale = 27;
+    instance.yScale = 27;
+    instance.xOffset = 0;
+    instance.yOffset = 0;
+    instance.flags = SFT_DOWNWARD_Y;
+    image.height = 16;
+    image.width = 16;
+    image.pixels = (unsigned char*)calloc(image.width*image.height,sizeof(unsigned char));
     // writing row_pointers to png
 
 }
