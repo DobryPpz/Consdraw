@@ -22,6 +22,7 @@ void delete_command(FILE *fp, char **saveptr, struct context *c);
 void menu_command(FILE *fp, char **saveptr, struct context *c);
 void end_command(FILE *fp, char **saveptr, struct context *c);
 void move_command(FILE *fp, char **saveptr, struct context *c);
+void write_png_command(FILE *fp, char **saveptr, struct context *c);
 void read_menu(FILE *fp, struct context *c);
 void read_parsing(FILE *fp, struct context *c);
 void read_drawing(FILE *fp, struct context *c);

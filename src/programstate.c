@@ -1,4 +1,6 @@
 #include <programstate.h>
+#include <png.h>
+#include <topng.h>
 
 void draw_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
@@ -86,6 +88,10 @@ void move_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
+}
+void write_png_command(FILE *fp, char **saveptr, struct context *c){
+    //png -bg blue -fg white -o plikkk.png
+    
 }
 void read_menu(FILE *fp, struct context *c){
     size_t linelen = 64;
@@ -232,6 +238,10 @@ void read_drawing(FILE *fp, struct context *c){
             }
             else if(strcmp(token,"end")==0) {
                 end_command(fp,&saveptr,c);
+                break;
+            }
+            else if(strcmp(token,"png")==0){
+                write_png_command(fp,&saveptr,c);
                 break;
             }
             saveptr = NULL;
