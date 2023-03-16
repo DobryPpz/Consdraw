@@ -91,7 +91,18 @@ void move_command(FILE *fp, char **saveptr, struct context *c){
 }
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
     //png -bg blue -fg white -o plikkk.png
-    
+    struct params p;
+    p.bg_r = 0;
+    p.bg_g = 0;
+    p.bg_b = 0;
+    p.bg_a = 255;
+    p.fg_r = 255;
+    p.fg_g = 255;
+    p.fg_b = 255;
+    p.fg_a = 255;
+    if(!write_png_file("examples/testtest.png",c->scene,&p)){
+        printf("Could not create a png file\n");
+    }
 }
 void read_menu(FILE *fp, struct context *c){
     size_t linelen = 64;
