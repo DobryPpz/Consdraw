@@ -283,6 +283,7 @@ void read_drawing(FILE *fp, struct context *c){
                 break;
             }
             else if(strcmp(token,"end")==0) {
+                free(line);
                 end_command(fp,&saveptr,c);
                 break;
             }
