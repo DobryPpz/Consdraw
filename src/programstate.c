@@ -49,19 +49,15 @@ void delete_command(FILE *fp, char **saveptr, struct context *c){
 }
 void menu_command(FILE *fp, char **saveptr, struct context *c){
     if(c!=NULL){
-        destroy_palette(c->palette);
-        c->palette = NULL;
         destroy_scene(c->scene);
         c->scene = NULL;
+        destroy_palette(c->palette);
+        c->palette = NULL;
         change_state(c,stdin,read_menu);
     }
 }
 void end_command(FILE *fp, char **saveptr, struct context *c){
     if(c!=NULL){
-        destroy_palette(c->palette);
-        c->palette = NULL;
-        destroy_scene(c->scene);
-        c->scene = NULL;
         destroy_context(c);
         c = NULL;
         exit(EXIT_SUCCESS);
@@ -90,7 +86,8 @@ void move_command(FILE *fp, char **saveptr, struct context *c){
     }
 }
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
-    //png -bg blue -fg white -o plikkk.png
+    char *token = NULL;
+    char *filename = NULL;
     struct params p;
     p.bg_r = 0;
     p.bg_g = 0;
@@ -100,9 +97,32 @@ void write_png_command(FILE *fp, char **saveptr, struct context *c){
     p.fg_g = 255;
     p.fg_b = 255;
     p.fg_a = 255;
-    if(!write_png_file("examples/testtest.png",c->scene,&p)){
+    while(token=strtok_r(NULL," \n\t",saveptr)){
+        if(strcmp(token,"-bg")==0){
+            if(sscanf(*saveptr,"%hhd %hhd %hhd %hhd",&p.bg_r,&p.bg_g,&p.bg_b,&p.bg_a)<4){
+                printf("Not enough arguments given to select background color\n");
+                return;
+            }
+        }
+        else if(strcmp(token,"-fg")==0){
+            if(sscanf(*saveptr,"%hhd %hhd %hhd %hhd",&p.fg_r,&p.fg_g,&p.fg_b,&p.fg_a)<4){
+                printf("Not enough arguments given to select foreground color\n");
+                return;
+            }
+        }
+        else if(strcmp(token,"-o")==0){
+            filename = *saveptr;
+        }
+    }
+    if(filename==NULL){
+        printf("Filename was not given\n");
+        return;
+    }
+    if(!write_png_file(filename,c->scene,&p)){
         printf("Could not create a png file\n");
     }
+    clear_screen(c->scene);
+    draw_scene(c->scene);
 }
 void read_menu(FILE *fp, struct context *c){
     size_t linelen = 64;
@@ -128,11 +148,15 @@ void read_menu(FILE *fp, struct context *c){
                     printf("Did not specify a file\n");
                 }
             }
+            else if(strcmp(token,"end")==0){
+                end_command(fp,NULL,c);
+            }
             else{
                 printf("Wrong command\n");
             }
         }
     }
+    free(line);
 }
 void read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
@@ -187,6 +211,8 @@ void read_parsing(FILE *fp, struct context *c){
                             content_height = 0;
                         }
                         else{
+                            fclose(fp);
+                            free(line);
                             printf("file error: did not specify a name for the drawing\n");
                             exit(EXIT_FAILURE);
                         }
@@ -196,6 +222,8 @@ void read_parsing(FILE *fp, struct context *c){
                     token = strtok(NULL," \n\t");
                     if(token!=NULL){
                         if(sscanf(token,"%d",&scene_width)==0){
+                            fclose(fp);
+                            free(line);
                             printf("file error: did not specify correct width value\n");
                             exit(EXIT_FAILURE);
                         }
@@ -204,6 +232,8 @@ void read_parsing(FILE *fp, struct context *c){
                         read_width = true;
                     }
                     else{
+                        fclose(fp);
+                        free(line);
                         printf("file error: did not specify any width value\n");
                         exit(EXIT_FAILURE);
                     }
@@ -212,12 +242,16 @@ void read_parsing(FILE *fp, struct context *c){
                     token = strtok(NULL," \n\t");
                     if(token!=NULL){
                         if(sscanf(token,"%d",&scene_height)==0){
+                            fclose(fp);
+                            free(line);
                             printf("file error: did not specify correct height value\n");
                             exit(EXIT_FAILURE);
                         }
                         read_height = true;
                     }
                     else{
+                        fclose(fp);
+                        free(line);
                         printf("file error: did not specify any height value\n");
                         exit(EXIT_FAILURE);
                     }
@@ -243,16 +277,13 @@ void read_drawing(FILE *fp, struct context *c){
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
-            else if(strcmp(token,"menu")==0) {
+            else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
+            else if(strcmp(token,"menu")==0){
                 menu_command(fp,&saveptr,c);
                 break;
             }
             else if(strcmp(token,"end")==0) {
                 end_command(fp,&saveptr,c);
-                break;
-            }
-            else if(strcmp(token,"png")==0){
-                write_png_command(fp,&saveptr,c);
                 break;
             }
             saveptr = NULL;
@@ -270,8 +301,8 @@ struct context *new_context(){
 }
 void destroy_context(struct context *c){
     if(c!=NULL){
-        if(c->palette!=NULL) destroy_palette(c->palette);
         if(c->scene!=NULL) destroy_scene(c->scene);
+        if(c->palette!=NULL) destroy_palette(c->palette);
         free(c);
     }
 }

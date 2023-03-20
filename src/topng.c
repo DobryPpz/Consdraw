@@ -10,7 +10,7 @@ void cleanup(png_bytep *row_pointers,
         free(row_pointers);
         sft_freefont(font);
         free(pixels);
-    }
+}
 void fill_bg(png_bytep *row_pointers, int width, int height, struct params *p){
     if(!row_pointers) return;
     for(int y=0;y<height;y++){
@@ -87,8 +87,8 @@ bool write_png_file(char *filename, struct scene *s, struct params *p){
     SFT instance;
     SFT_Image image;
     instance.font = font;
-    instance.xScale = 27;
-    instance.yScale = 27;
+    instance.xScale = 20;
+    instance.yScale = 20;
     instance.xOffset = 0;
     instance.yOffset = 0;
     instance.flags = SFT_DOWNWARD_Y;
