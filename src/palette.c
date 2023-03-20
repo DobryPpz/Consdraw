@@ -19,6 +19,9 @@ void destroy_tree(struct drawing *d){
         }
         free(d->content);
     }
+    if(d->name!=NULL){
+        free(d->name);
+    }
     free(d);
 }
 void destroy_palette(struct palette *p){

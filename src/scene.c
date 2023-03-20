@@ -8,6 +8,8 @@ void destroy_scene(struct scene *s){
                 traverser = s->head;
                 s->head = s->head->next;
                 traverser->next = NULL;
+                traverser->content = NULL;
+                free(traverser->id);
                 free(traverser);
             }
         }
@@ -94,6 +96,7 @@ bool remove_from_scene(struct scene *s, char *id){
         struct element *traverser = s->head;
         if(strcmp(traverser->id,id)==0){
             s->head = s->head->next;
+            traverser->next = NULL;
             free(traverser);
             return true;
         }
@@ -148,7 +151,7 @@ void clear_canvas(struct scene *s){
 }
 void clear_screen(struct scene *s){
     clear_canvas(s);
-    system("clear");
+    //system("clear");
     load_scene(s);
 }
 void clear_scene(struct scene *s){
