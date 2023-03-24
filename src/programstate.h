@@ -12,6 +12,8 @@
 //drawing
 
 struct context{
+    char *line;
+    size_t linelen;
     struct scene *scene;
     struct palette *palette;
     void(*read)(FILE*,struct context*);

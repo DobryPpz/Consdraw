@@ -129,22 +129,23 @@ void write_png_command(FILE *fp, char **saveptr, struct context *c){
     draw_scene(c->scene);
 }
 void read_menu(FILE *fp, struct context *c){
-    size_t linelen = 64;
-    char *line = (char*)calloc(linelen,sizeof(char));
     char *token = NULL;
     FILE *handle = NULL;
     char *saveptr = NULL;
-    while(getline(&line,&linelen,fp)!=EOF){
-        token = strtok_r(line," \n\t",&saveptr);
+    memset(c->line,0,c->linelen);
+    while(getline(&c->line,&c->linelen,fp)!=EOF){
+        token = strtok_r(c->line," \n\t",&saveptr);
         if(token){
-            if(strcmp(token,"load")==0) {
+            if(strcmp(token,"load")==0){
                 load_command(fp,&saveptr,c);
             }
-            else if(strcmp(token,"end")==0) end_command(fp,NULL,c);
+            else if(strcmp(token,"end")==0){
+                end_command(fp,NULL,c);
+            }
             else printf("Wrong command\n");
+            memset(c->line,0,c->linelen);
         }
     }
-    free(line);
 }
 void read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
@@ -246,7 +247,7 @@ void read_parsing(FILE *fp, struct context *c){
                 }
             }
         }
-        memset(line,'\0',linelen);
+        memset(line,0,linelen);
     }
     fclose(fp);
     free(line);
@@ -256,12 +257,11 @@ void read_drawing(FILE *fp, struct context *c){
     char *token = NULL;
     int x;
     int y;
-    size_t linelen = 128;
-    char *line = (char*)calloc(linelen,sizeof(char));
     char *saveptr = NULL;
-    while(getline(&line,&linelen,fp)!=EOF){
-        if(strlen(line)>1){
-            token = strtok_r(line," \n\t",&saveptr);
+    memset(c->line,0,c->linelen);
+    while(getline(&c->line,&c->linelen,fp)!=EOF){
+        if(strlen(c->line)>1){
+            token = strtok_r(c->line," \n\t",&saveptr);
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
@@ -271,18 +271,18 @@ void read_drawing(FILE *fp, struct context *c){
                 break;
             }
             else if(strcmp(token,"end")==0) {
-                free(line);
                 end_command(fp,&saveptr,c);
                 break;
             }
             saveptr = NULL;
-            memset(line,'\0',linelen);
         }
+        memset(c->line,0,c->linelen);
     }
-    free(line);
 }
 struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
+    c->line = (char*)calloc(128,sizeof(char));
+    c->linelen = 128;
     c->palette = NULL;
     c->read = NULL;
     c->scene = NULL;
@@ -290,8 +290,9 @@ struct context *new_context(){
 }
 void destroy_context(struct context *c){
     if(c!=NULL){
-        if(c->scene!=NULL) destroy_scene(c->scene);
-        if(c->palette!=NULL) destroy_palette(c->palette);
+        if(c->line) free(c->line);
+        if(c->scene) destroy_scene(c->scene);
+        if(c->palette) destroy_palette(c->palette);
         free(c);
     }
 }
