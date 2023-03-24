@@ -17,6 +17,7 @@ struct context{
     void(*read)(FILE*,struct context*);
 };
 
+void load_command(FILE *fp, char **saveptr, struct context *c);
 void draw_command(FILE *fp, char **saveptr, struct context *c);
 void delete_command(FILE *fp, char **saveptr, struct context *c);
 void menu_command(FILE *fp, char **saveptr, struct context *c);

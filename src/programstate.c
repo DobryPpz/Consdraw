@@ -2,6 +2,22 @@
 #include <png.h>
 #include <topng.h>
 
+void load_command(FILE *fp, char **saveptr, struct context *c){
+    char *token = NULL;
+    FILE *handle = NULL;
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(!token){
+        printf("Did not specify a file\n");
+        return;
+    }
+    handle = fopen(token,"r");
+    if(handle){
+        change_state(c,handle,read_parsing);
+    }
+    else{
+        printf("Could not open the file\n");
+    }
+}
 void draw_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
     char relation[32] = {'\0'};
@@ -117,24 +133,12 @@ void read_menu(FILE *fp, struct context *c){
     char *line = (char*)calloc(linelen,sizeof(char));
     char *token = NULL;
     FILE *handle = NULL;
+    char *saveptr = NULL;
     while(getline(&line,&linelen,fp)!=EOF){
-        token = strtok(line," \n\t");
+        token = strtok_r(line," \n\t",&saveptr);
         if(token){
-            if(strcmp(token,"load")==0){
-                token = strtok(NULL," \n\t");
-                if(token!=NULL){
-                    handle = fopen(token,"r");
-                    if(handle!=NULL){
-                        free(line);
-                        change_state(c,handle,read_parsing);
-                    }
-                    else{
-                        printf("Could not open the file\n");
-                    }
-                }
-                else{
-                    printf("Did not specify a file\n");
-                }
+            if(strcmp(token,"load")==0) {
+                load_command(fp,&saveptr,c);
             }
             else if(strcmp(token,"end")==0) end_command(fp,NULL,c);
             else printf("Wrong command\n");
