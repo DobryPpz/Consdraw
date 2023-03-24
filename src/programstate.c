@@ -12,29 +12,24 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     struct element *el = NULL;
     if(sscanf(*saveptr,"%s %s %s %d %d",name,relation,drawing,&x,&y)<5){
         printf("not enough arguments to function call: draw\n");
+        return;
     }
-    else{
-        el = get_element(c->scene,name);
-        if(el!=NULL){
-            printf("the element called like that already exists in the scene %s %s\n",name,el->id);
-            return;
-        }
-        if(strcmp(relation,"=")!=0) return;
-        d = get_drawing(c->palette,drawing);
-        if(d==NULL){
-            printf("the is no drawing with this name in palette memory\n");
-            return;
-        }
-        el = new_element(name,x,y,d->content_height,d->content_width,d->content);
-        if(el==NULL){
-            return;
-        }
-        if(!add_to_scene(c->scene,el)){
-            return;
-        }
-        clear_screen(c->scene);
-        draw_scene(c->scene);
+    el = get_element(c->scene,name);
+    if(el){
+        printf("the element called like that already exists in the scene %s %s\n",name,el->id);
+        return;
     }
+    if(strcmp(relation,"=")) return;
+    d = get_drawing(c->palette,drawing);
+    if(!d){
+        printf("the is no drawing with this name in palette memory\n");
+        return;
+    }
+    el = new_element(name,x,y,d->content_height,d->content_width,d->content);
+    if(!el) return;
+    if(!add_to_scene(c->scene,el)) return;
+    clear_screen(c->scene);
+    draw_scene(c->scene);
 }
 void delete_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
@@ -48,42 +43,37 @@ void delete_command(FILE *fp, char **saveptr, struct context *c){
     draw_scene(c->scene);
 }
 void menu_command(FILE *fp, char **saveptr, struct context *c){
-    if(c!=NULL){
-        destroy_scene(c->scene);
-        c->scene = NULL;
-        destroy_palette(c->palette);
-        c->palette = NULL;
-        change_state(c,stdin,read_menu);
-    }
+    if(!c) return;
+    destroy_scene(c->scene);
+    c->scene = NULL;
+    destroy_palette(c->palette);
+    c->palette = NULL;
+    change_state(c,stdin,read_menu);
 }
 void end_command(FILE *fp, char **saveptr, struct context *c){
-    if(c!=NULL){
-        destroy_context(c);
-        c = NULL;
-        exit(EXIT_SUCCESS);
-    }
+    if(!c) return;
+    destroy_context(c);
+    c = NULL;
+    exit(EXIT_SUCCESS);
 }
 void move_command(FILE *fp, char **saveptr, struct context *c){
-    if(c!=NULL){
-        char name[32] = {'\0'};
-        struct element *el = NULL;
-        int new_x;
-        int new_y;
-        if(sscanf(*saveptr,"%s %d %d",name,&new_x,&new_y)<3){
-            printf("not enough arguments to function call: move\n");
-        }
-        else{
-            el = get_element(c->scene,name);
-            if(el!=NULL){
-                move_element(el,new_x,new_y);
-                clear_screen(c->scene);
-                draw_scene(c->scene);
-            }
-            else{
-                printf("the element with that name does does not exists in the scene\n");
-            }
-        }
+    if(!c) return;
+    char name[32] = {'\0'};
+    struct element *el = NULL;
+    int new_x;
+    int new_y;
+    if(sscanf(*saveptr,"%s %d %d",name,&new_x,&new_y)<3){
+        printf("not enough arguments to function call: move\n");
+        return;
     }
+    el = get_element(c->scene,name);
+    if(el){
+        move_element(el,new_x,new_y);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+        return;
+    }
+    printf("the element with that name does does not exists in the scene\n");
 }
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;
@@ -114,13 +104,11 @@ void write_png_command(FILE *fp, char **saveptr, struct context *c){
             filename = *saveptr;
         }
     }
-    if(filename==NULL){
+    if(!filename){
         printf("Filename was not given\n");
         return;
     }
-    if(!write_png_file(filename,c->scene,&p)){
-        printf("Could not create a png file\n");
-    }
+    if(!write_png_file(filename,c->scene,&p)) printf("Could not create a png file\n");
     clear_screen(c->scene);
     draw_scene(c->scene);
 }
@@ -131,7 +119,7 @@ void read_menu(FILE *fp, struct context *c){
     FILE *handle = NULL;
     while(getline(&line,&linelen,fp)!=EOF){
         token = strtok(line," \n\t");
-        if(token!=NULL){
+        if(token){
             if(strcmp(token,"load")==0){
                 token = strtok(NULL," \n\t");
                 if(token!=NULL){
@@ -148,12 +136,8 @@ void read_menu(FILE *fp, struct context *c){
                     printf("Did not specify a file\n");
                 }
             }
-            else if(strcmp(token,"end")==0){
-                end_command(fp,NULL,c);
-            }
-            else{
-                printf("Wrong command\n");
-            }
+            else if(strcmp(token,"end")==0) end_command(fp,NULL,c);
+            else printf("Wrong command\n");
         }
     }
     free(line);

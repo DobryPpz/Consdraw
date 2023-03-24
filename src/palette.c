@@ -10,23 +10,23 @@ struct palette *new_palette(){
 }
 
 void destroy_tree(struct drawing *d){
-    if(d==NULL) return;
+    if(!d) return;
     destroy_tree(d->left);
     destroy_tree(d->right);
-    if(d->content!=NULL){
+    if(d->content){
         for(int i=0;i<d->content_height;i++){
-            if(d->content[i]!=NULL) free(d->content[i]);
+            if(d->content[i]) free(d->content[i]);
         }
         free(d->content);
     }
-    if(d->name!=NULL){
+    if(d->name){
         free(d->name);
     }
     free(d);
 }
 void destroy_palette(struct palette *p){
-    if(p!=NULL){
-        if(p->root!=NULL){
+    if(p){
+        if(p->root){
             destroy_tree(p->root);
         }
         free(p);
@@ -44,46 +44,40 @@ struct drawing *new_drawing(char *name, char **content, int content_height, int 
     return d;
 }
 bool add_drawing(struct palette *p, struct drawing *d){
-    if(p!=NULL && d!=NULL){
-        if(p->root==NULL){
-            p->root = d;
-            return true;
+    if(!(p && d)) return false;
+    if(!p->root){
+        p->root = d;
+        return true;
+    }
+    bool inserted = false;
+    struct drawing *traverser = p->root;
+    while(!inserted){
+        int cmp = strcmp(d->name,traverser->name);
+        if(cmp<0){
+            if(traverser->left!=NULL){
+                traverser = traverser->left;
+            }
+            else{
+                traverser->left = d;
+                inserted = true;
+            }
         }
         else{
-            bool inserted = false;
-            struct drawing *traverser = p->root;
-            while(!inserted){
-                int cmp = strcmp(d->name,traverser->name);
-                if(cmp<0){
-                    if(traverser->left!=NULL){
-                        traverser = traverser->left;
-                    }
-                    else{
-                        traverser->left = d;
-                        inserted = true;
-                    }
-                }
-                else{
-                    if(traverser->right!=NULL){
-                        traverser = traverser->right;
-                    }
-                    else{
-                        traverser->right = d;
-                        inserted = true;
-                    }
-                }
+            if(traverser->right!=NULL){
+                traverser = traverser->right;
             }
-            return true;
+            else{
+                traverser->right = d;
+                inserted = true;
+            }
         }
     }
-    else{
-        return false;
-    }
+    return true;
 }
 struct drawing *get_drawing(struct palette *p, char *name){
-    if(p!=NULL && p->root!=NULL && name!=NULL){
+    if(p && p->root && name){
         struct drawing *traverser = p->root;
-        while(traverser!=NULL){
+        while(traverser){
             int cmp = strcmp(name,traverser->name);
             if(cmp==0) return traverser;
             else if(cmp<0) traverser=traverser->left;
@@ -91,7 +85,5 @@ struct drawing *get_drawing(struct palette *p, char *name){
         }
         return NULL;
     }
-    else{
-        return NULL;
-    }
+    return NULL;
 }
