@@ -1,4 +1,5 @@
 #include <scene.h>
+#include <utilities.h>
 
 void destroy_scene(struct scene *s){
     if(s!=NULL){
@@ -170,4 +171,32 @@ void move_element(struct element *el, int x, int y){
         el->x = x;
         el->y = y;
     }
+}
+void down_element(struct scene *s, struct element *el, int howManyLayers){
+    if(s->head == el) return;
+    struct element *traverser = s->head;
+    struct element *current = NULL;
+    struct element *subsequent = NULL;
+    int current_index = 1;
+    int new_index;
+    while(traverser->next!=el){
+        traverser = traverser->next;
+        current_index++;
+    }
+    traverser->next = el->next;
+    el->next = NULL;
+    new_index = max_int(0,current_index-howManyLayers);
+    if(new_index==0){
+        el->next = s->head;
+        s->head = el;
+        return;
+    }
+    current = s->head;
+    subsequent = s->head->next;
+    for(int i=1;i<new_index && subsequent;i++){
+        subsequent = subsequent->next;
+        current = current->next;
+    }
+    current->next = el;
+    el->next = subsequent;
 }
