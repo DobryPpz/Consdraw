@@ -266,14 +266,8 @@ void read_drawing(FILE *fp, struct context *c){
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
-            else if(strcmp(token,"menu")==0){
-                menu_command(fp,&saveptr,c);
-                break;
-            }
-            else if(strcmp(token,"end")==0) {
-                end_command(fp,&saveptr,c);
-                break;
-            }
+            else if(strcmp(token,"menu")==0) menu_command(fp,&saveptr,c);
+            else if(strcmp(token,"end")==0) end_command(fp,&saveptr,c);
             saveptr = NULL;
         }
         memset(c->line,0,c->linelen);
