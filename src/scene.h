@@ -35,5 +35,6 @@ void clear_canvas(struct scene *s);
 void clear_scene(struct scene *s);
 void clear_screen(struct scene *s);
 void move_element(struct element *el, int x, int y);
+void down_element(struct scene *s, struct element *el, int howManyLayers);
 
 #endif
