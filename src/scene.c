@@ -151,7 +151,7 @@ void clear_canvas(struct scene *s){
 }
 void clear_screen(struct scene *s){
     clear_canvas(s);
-    //system("clear");
+    system("clear");
     load_scene(s);
 }
 void clear_scene(struct scene *s){
