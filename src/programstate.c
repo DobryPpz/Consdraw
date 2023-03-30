@@ -100,9 +100,35 @@ void down_command(FILE *fp, char **saveptr, struct context *c){
         printf("not enough arguments to function call: down\n");
         return;
     }
+    if(howManyLayers<=0){
+        printf("the layer shift must be greater than 0\n");
+        return;
+    }
     el = get_element(c->scene,name);
     if(el){
         down_element(c->scene,el,howManyLayers);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+        return;
+    }
+    printf("the element with that name does does not exists in the scene\n");
+}
+void up_command(FILE *fp, char **saveptr, struct context *c){
+    if(!c) return;
+    char name[32] = {'\0'};
+    struct element *el = NULL;
+    int howManyLayers;
+    if(sscanf(*saveptr,"%s %d",name,&howManyLayers)<2){
+        printf("not enough arguments to function call: up\n");
+        return;
+    }
+    if(howManyLayers<=0){
+        printf("the layer shift must be greater than 0\n");
+        return;
+    }
+    el = get_element(c->scene,name);
+    if(el){
+        up_element(c->scene,el,howManyLayers);
         clear_screen(c->scene);
         draw_scene(c->scene);
         return;
@@ -284,6 +310,7 @@ void read_drawing(FILE *fp, struct context *c){
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"down")==0) down_command(fp,&saveptr,c);
+            else if(strcmp(token,"up")==0) up_command(fp,&saveptr,c);
             else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
             else if(strcmp(token,"menu")==0) menu_command(fp,&saveptr,c);
             else if(strcmp(token,"end")==0) end_command(fp,&saveptr,c);

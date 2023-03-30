@@ -179,6 +179,7 @@ void down_element(struct scene *s, struct element *el, int howManyLayers){
     struct element *subsequent = NULL;
     int current_index = 1;
     int new_index;
+    if(s->head->next==NULL) return;
     while(traverser->next!=el){
         traverser = traverser->next;
         current_index++;
@@ -196,6 +197,41 @@ void down_element(struct scene *s, struct element *el, int howManyLayers){
     for(int i=1;i<new_index && subsequent;i++){
         subsequent = subsequent->next;
         current = current->next;
+    }
+    if(subsequent==NULL){
+        s->tail = el;
+    }
+    current->next = el;
+    el->next = subsequent;
+}
+void up_element(struct scene *s, struct element *el, int howManyLayers){
+    struct element *traverser = s->head;
+    struct element *current = NULL;
+    struct element *subsequent = NULL;
+    int current_index = 0;
+    int new_index;
+    if(s->head->next==NULL) return;
+    if(el==s->head){
+        s->head = s->head->next;
+    }
+    else{
+        current_index++;
+        while(traverser->next!=el){
+            traverser = traverser->next;
+            current_index++;
+        }
+        traverser->next = el->next;
+    }
+    el->next = NULL;
+    new_index = current_index+howManyLayers;
+    current = s->head;
+    subsequent = s->head->next;
+    for(int i=1;i<new_index && subsequent;i++){
+        subsequent = subsequent->next;
+        current = current->next;
+    }
+    if(subsequent==NULL){
+        s->tail = el;
     }
     current->next = el;
     el->next = subsequent;
