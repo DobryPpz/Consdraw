@@ -373,19 +373,15 @@ struct context *new_context(){
     return c;
 }
 void destroy_context(struct context *c){
-    if(c!=NULL){
-        if(c->line) free(c->line);
-        if(c->scene) destroy_scene(c->scene);
-        if(c->palette) destroy_palette(c->palette);
-        free(c);
-    }
+    if(!c) return;
+    if(c->line) free(c->line);
+    if(c->scene) destroy_scene(c->scene);
+    if(c->palette) destroy_palette(c->palette);
+    free(c);
 }
 bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
-    if(c!=NULL && read!=NULL){
-        c->read = read;
-        c->read(fp,c);
-    }
-    else{
-        return false;
-    }
+    if(!(c && read)) return false;
+    c->read = read;
+    c->read(fp,c);
+    return true;
 }
