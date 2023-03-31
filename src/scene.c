@@ -98,6 +98,7 @@ bool remove_from_scene(struct scene *s, char *id){
         if(strcmp(traverser->id,id)==0){
             s->head = s->head->next;
             traverser->next = NULL;
+            free(traverser->id);
             free(traverser);
             return true;
         }
@@ -106,8 +107,12 @@ bool remove_from_scene(struct scene *s, char *id){
         }
         if(traverser->next==NULL) return false;
         struct element *to_remove = traverser->next;
-        s->tail = traverser;
+        if(to_remove->next==NULL){
+            s->tail = traverser;
+        }
         traverser->next = traverser->next->next;
+        to_remove->next = NULL;
+        free(to_remove->id);
         free(to_remove);
         return true;
     }
@@ -198,13 +203,12 @@ void down_element(struct scene *s, struct element *el, int howManyLayers){
         subsequent = subsequent->next;
         current = current->next;
     }
-    if(subsequent==NULL){
-        s->tail = el;
-    }
     current->next = el;
     el->next = subsequent;
+    reset_tail(s);
 }
 void up_element(struct scene *s, struct element *el, int howManyLayers){
+    if(s->tail==el) return;
     struct element *traverser = s->head;
     struct element *current = NULL;
     struct element *subsequent = NULL;
@@ -213,6 +217,16 @@ void up_element(struct scene *s, struct element *el, int howManyLayers){
     if(s->head->next==NULL) return;
     if(el==s->head){
         s->head = s->head->next;
+        el->next = NULL;
+        new_index = howManyLayers;
+        current = s->head;
+        subsequent = s->head->next;
+        for(int i=1;i<new_index && subsequent;i++){
+            subsequent = subsequent->next;
+            current = current->next;
+        }
+        current->next = el;
+        el->next = subsequent;
     }
     else{
         current_index++;
@@ -220,19 +234,36 @@ void up_element(struct scene *s, struct element *el, int howManyLayers){
             traverser = traverser->next;
             current_index++;
         }
-        traverser->next = el->next;
+        traverser->next = traverser->next->next;
+        el->next = NULL;
+        new_index = current_index+howManyLayers;
+        current = s->head;
+        subsequent = s->head->next;
+        for(int i=1;i<new_index && subsequent;i++){
+            subsequent = subsequent->next;
+            current = current->next;
+        }
+        current->next = el;
+        el->next = subsequent;
     }
-    el->next = NULL;
-    new_index = current_index+howManyLayers;
-    current = s->head;
-    subsequent = s->head->next;
-    for(int i=1;i<new_index && subsequent;i++){
-        subsequent = subsequent->next;
-        current = current->next;
+    reset_tail(s);
+}
+void bottom_element(struct scene *s, struct element *el){
+    if(s->head==el || s->head->next==NULL) return;
+    struct element *traverser = s->head;
+    while(traverser->next!=el){
+        traverser = traverser->next;
     }
-    if(subsequent==NULL){
-        s->tail = el;
+    traverser->next = el->next;
+    el->next = s->head;
+    s->head = el;
+    reset_tail(s);
+}
+void reset_tail(struct scene *s){
+    if(!s) return;
+    struct element *traverser = s->head;
+    while(traverser->next!=NULL){
+        traverser = traverser->next;
     }
-    current->next = el;
-    el->next = subsequent;
+    s->tail = traverser;
 }
