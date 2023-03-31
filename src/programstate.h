@@ -28,6 +28,7 @@ void move_command(FILE *fp, char **saveptr, struct context *c);
 void down_command(FILE *fp, char **saveptr, struct context *c);
 void up_command(FILE *fp, char **saveptr, struct context *c);
 void bottom_command(FILE *fp, char **saveptr, struct context *c);
+void top_command(FILE *fp, char **saveptr, struct context *c);
 void write_png_command(FILE *fp, char **saveptr, struct context *c);
 void read_menu(FILE *fp, struct context *c);
 void read_parsing(FILE *fp, struct context *c);

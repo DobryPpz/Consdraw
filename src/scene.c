@@ -259,6 +259,25 @@ void bottom_element(struct scene *s, struct element *el){
     s->head = el;
     reset_tail(s);
 }
+void top_element(struct scene *s, struct element *el){
+    if(s->tail==el || s->head->next==NULL) return;
+    struct element *traverser = s->head;
+    if(s->head==el){
+        s->head = s->head->next;
+        el->next = NULL;
+        s->tail->next = el;
+        s->tail = el;
+    }
+    else{
+        while(traverser->next!=el){
+            traverser = traverser->next;
+        }
+        traverser->next = el->next;
+        el->next = NULL;
+        s->tail->next = el;
+        s->tail = el;
+    }
+}
 void reset_tail(struct scene *s){
     if(!s) return;
     struct element *traverser = s->head;
