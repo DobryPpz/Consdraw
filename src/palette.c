@@ -74,15 +74,13 @@ bool add_drawing(struct palette *p, struct drawing *d){
     return true;
 }
 struct drawing *get_drawing(struct palette *p, char *name){
-    if(p && p->root && name){
-        struct drawing *traverser = p->root;
-        while(traverser){
-            int cmp = strcmp(name,traverser->name);
-            if(cmp==0) return traverser;
-            else if(cmp<0) traverser=traverser->left;
-            else traverser=traverser->right;
-        }
-        return NULL;
+    if(!(p && p->root && name)) return NULL;
+    struct drawing *traverser = p->root;
+    while(traverser){
+        int cmp = strcmp(name,traverser->name);
+        if(cmp==0) return traverser;
+        else if(cmp<0) traverser=traverser->left;
+        else traverser=traverser->right;
     }
     return NULL;
 }
