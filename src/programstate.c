@@ -152,6 +152,23 @@ void bottom_command(FILE *fp, char **saveptr, struct context *c){
     }
     printf("the element with that name does does not exists in the scene\n");
 }
+void top_command(FILE *fp, char **saveptr, struct context *c){
+    if(!c) return;
+    char name[32] = {'\0'};
+    struct element *el = NULL;
+    if(sscanf(*saveptr,"%s",name)<1){
+        printf("not enough arguments to function call: bottom\n");
+        return;
+    }
+    el = get_element(c->scene,name);
+    if(el){
+        top_element(c->scene,el);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+        return;
+    }
+    printf("the element with that name does does not exists in the scene\n");
+}
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;
     char *filename = NULL;
@@ -329,6 +346,7 @@ void read_drawing(FILE *fp, struct context *c){
             else if(strcmp(token,"down")==0) down_command(fp,&saveptr,c);
             else if(strcmp(token,"up")==0) up_command(fp,&saveptr,c);
             else if(strcmp(token,"bottom")==0) bottom_command(fp,&saveptr,c);
+            else if(strcmp(token,"top")==0) top_command(fp,&saveptr,c);
             else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
             else if(strcmp(token,"menu")==0) menu_command(fp,&saveptr,c);
             else if(strcmp(token,"end")==0) end_command(fp,&saveptr,c);
