@@ -278,6 +278,17 @@ void top_element(struct scene *s, struct element *el){
         s->tail = el;
     }
 }
+void list_elements(struct scene *s){
+    if(!s) return;
+    clear_screen(s);
+    struct element *traverser = s->head;
+    while(traverser){
+        printf("- %s\n",traverser->id);
+        traverser = traverser->next;
+    }
+    printf("press any key...\n");
+    getchar();
+}
 void reset_tail(struct scene *s){
     if(!s) return;
     struct element *traverser = s->head;
