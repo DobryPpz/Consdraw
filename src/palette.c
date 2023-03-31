@@ -25,12 +25,11 @@ void destroy_tree(struct drawing *d){
     free(d);
 }
 void destroy_palette(struct palette *p){
-    if(p){
-        if(p->root){
-            destroy_tree(p->root);
-        }
-        free(p);
+    if(!p) return;
+    if(p->root){
+        destroy_tree(p->root);
     }
+    free(p);
 }
 struct drawing *new_drawing(char *name, char **content, int content_height, int content_width){
     struct drawing *d = (struct drawing*)malloc(sizeof(struct drawing));
