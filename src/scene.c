@@ -289,6 +289,18 @@ void list_elements(struct scene *s){
     printf("press any key...\n");
     getchar();
 }
+void show_element(struct scene *s, struct element *el){
+    if(!s) return;
+    clear_screen(s);
+    for(int i=0;i<el->content_height;i++){
+        for(int j=0;j<el->content_width;j++){
+            printf("%c",el->content[i][j]);
+        }
+        printf("\n");
+    }
+    printf("press any key...\n");
+    getchar();
+}
 void reset_tail(struct scene *s){
     if(!s) return;
     struct element *traverser = s->head;

@@ -40,6 +40,7 @@ void up_element(struct scene *s, struct element *el, int howManyLayers);
 void bottom_element(struct scene *s, struct element *el);
 void top_element(struct scene *s, struct element *el);
 void list_elements(struct scene *s);
+void show_element(struct scene *s, struct element *el);
 void reset_tail(struct scene *s);
 
 #endif
