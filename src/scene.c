@@ -298,6 +298,7 @@ void show_element(struct scene *s, struct element *el){
         }
         printf("\n");
     }
+    printf("x: %d   y: %d\n",el->x,el->y);
     printf("press any key...\n");
     getchar();
 }
