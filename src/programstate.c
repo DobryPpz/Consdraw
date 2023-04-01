@@ -89,7 +89,7 @@ void move_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does does not exists in the scene\n");
+    printf("the element with that name does not exists in the scene\n");
 }
 void down_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
@@ -111,7 +111,7 @@ void down_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does does not exists in the scene\n");
+    printf("the element with that name does not exists in the scene\n");
 }
 void up_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
@@ -150,7 +150,7 @@ void bottom_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does does not exists in the scene\n");
+    printf("the element with that name does not exists in the scene\n");
 }
 void top_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
@@ -167,13 +167,30 @@ void top_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does does not exists in the scene\n");
+    printf("the element with that name does not exist in the scene\n");
 }
 void list_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
     list_elements(c->scene);
     clear_screen(c->scene);
     draw_scene(c->scene);
+}
+void show_command(FILE *fp, char **saveptr, struct context *c){
+    if(!c) return;
+    char name[32] = {'\0'};
+    struct element *el = NULL;
+    if(sscanf(*saveptr,"%s",name)<1){
+        printf("not enough arguments to function call: show\n");
+        return;
+    }
+    el = get_element(c->scene,name);
+    if(el){
+        show_element(c->scene,el);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+        return;
+    }
+    printf("the elements with that name does not exist in the scene\n");
 }
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;
@@ -350,6 +367,7 @@ void read_drawing(FILE *fp, struct context *c){
             else if(strcmp(token,"bottom")==0) bottom_command(fp,&saveptr,c);
             else if(strcmp(token,"top")==0) top_command(fp,&saveptr,c);
             else if(strcmp(token,"list")==0) list_command(fp,&saveptr,c);
+            else if(strcmp(token,"show")==0) show_command(fp,&saveptr,c);
             else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
             else if(strcmp(token,"menu")==0) menu_command(fp,&saveptr,c);
             else if(strcmp(token,"end")==0) end_command(fp,&saveptr,c);
