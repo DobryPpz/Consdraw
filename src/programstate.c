@@ -100,18 +100,25 @@ void down_command(FILE *fp, char **saveptr, struct context *c){
         printf("not enough arguments to function call: down\n");
         return;
     }
-    if(howManyLayers<=0){
-        printf("the layer shift must be greater than 0\n");
+    if(howManyLayers==0){
+        printf("the layer shift must not be 0\n");
         return;
     }
     el = get_element(c->scene,name);
-    if(el){
+    if(!el){
+        printf("the element with that name does not exists in the scene\n");
+        return;
+    }
+    if(howManyLayers<0){
+        up_element(c->scene,el,-1*howManyLayers);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+    }
+    else{
         down_element(c->scene,el,howManyLayers);
         clear_screen(c->scene);
         draw_scene(c->scene);
-        return;
     }
-    printf("the element with that name does not exists in the scene\n");
 }
 void up_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
@@ -122,18 +129,25 @@ void up_command(FILE *fp, char **saveptr, struct context *c){
         printf("not enough arguments to function call: up\n");
         return;
     }
-    if(howManyLayers<=0){
-        printf("the layer shift must be greater than 0\n");
+    if(howManyLayers==0){
+        printf("the layer shift must not be 0\n");
         return;
     }
     el = get_element(c->scene,name);
-    if(el){
+    if(!el){
+        printf("the element with that name does not exists in the scene\n");
+        return;
+    }
+    if(howManyLayers<0){
+        down_element(c->scene,el,-1*howManyLayers);
+        clear_screen(c->scene);
+        draw_scene(c->scene);
+    }
+    else{
         up_element(c->scene,el,howManyLayers);
         clear_screen(c->scene);
         draw_scene(c->scene);
-        return;
     }
-    printf("the element with that name does does not exists in the scene\n");
 }
 void bottom_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
