@@ -220,12 +220,8 @@ void read_menu(FILE *fp, struct context *c){
     while(getline(&c->line,&c->linelen,fp)!=EOF){
         token = strtok_r(c->line," \n\t",&saveptr);
         if(token){
-            if(strcmp(token,"load")==0){
-                load_command(fp,&saveptr,c);
-            }
-            else if(strcmp(token,"end")==0){
-                end_command(fp,NULL,c);
-            }
+            if(strcmp(token,"load")==0) load_command(fp,&saveptr,c);
+            else if(strcmp(token,"end")==0) end_command(fp,NULL,c);
             else printf("Wrong command\n");
             memset(c->line,0,c->linelen);
         }
