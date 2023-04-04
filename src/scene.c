@@ -75,6 +75,46 @@ struct element *get_element(struct scene *s, char *id){
         return NULL;
     }
 }
+struct element *shift(struct scene *s){
+    if(!s || !s->head) return NULL;
+    struct element *ret = s->head;
+    s->head = s->head->next;
+    ret->next = NULL;
+    return ret;
+}
+struct stack *new_stack(){
+    struct stack *s = (struct stack*)malloc(sizeof(struct stack));
+    s->top = NULL;
+    return s;
+}
+bool destroy_stack(struct stack *s){
+    if(!s) return false;
+    struct element *to_destroy = NULL;
+    while(s->top){
+        to_destroy = pop(s);
+        to_destroy->next = NULL;
+        free(to_destroy);
+    }
+    free(s);
+    return true;
+}
+bool push(struct stack *s, struct element *el){
+    if(!s || !el) return false;
+    if(!s->top){
+        s->top = el;
+        return true;
+    }
+    el->next = s->top;
+    s->top = el;
+    return true;
+}
+struct element *pop(struct stack *s){
+    if(!s || !s->top) return NULL;
+    struct element *to_pop = s->top;
+    s->top = s->top->next;
+    to_pop->next = NULL;
+    return to_pop;
+}
 bool add_to_scene(struct scene *s, struct element *el){
     if(s!=NULL && el!=NULL){
         if(s->head==NULL){
@@ -301,6 +341,17 @@ void show_element(struct scene *s, struct element *el){
     printf("x: %d   y: %d\n",el->x,el->y);
     printf("press any key...\n");
     getchar();
+}
+void reverse_elements(struct scene *s){
+    if(!s) return;
+    struct stack *reverser = new_stack();
+    while(s->head){
+        push(reverser,shift(s));
+    }
+    while(reverser->top){
+        add_to_scene(s,pop(reverser));
+    }
+    destroy_stack(reverser);
 }
 void reset_tail(struct scene *s){
     if(!s) return;

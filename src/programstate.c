@@ -206,6 +206,12 @@ void show_command(FILE *fp, char **saveptr, struct context *c){
     }
     printf("the elements with that name does not exist in the scene\n");
 }
+void reverse_command(FILE *fp, char **saveptr, struct context *c){
+    if(!c) return;
+    reverse_elements(c->scene);
+    clear_screen(c->scene);
+    draw_scene(c->scene);
+}
 void write_png_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;
     char *filename = NULL;
@@ -382,6 +388,7 @@ void read_drawing(FILE *fp, struct context *c){
             else if(strcmp(token,"top")==0) top_command(fp,&saveptr,c);
             else if(strcmp(token,"list")==0) list_command(fp,&saveptr,c);
             else if(strcmp(token,"show")==0) show_command(fp,&saveptr,c);
+            else if(strcmp(token,"reverse")==0) reverse_command(fp,&saveptr,c);
             else if(strcmp(token,"png")==0) write_png_command(fp,&saveptr,c);
             else if(strcmp(token,"menu")==0) menu_command(fp,&saveptr,c);
             else if(strcmp(token,"end")==0) end_command(fp,&saveptr,c);

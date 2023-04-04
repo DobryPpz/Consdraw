@@ -15,6 +15,10 @@ struct element{
     struct element *next;
 };
 
+struct stack{
+    struct element *top;
+};
+
 struct scene{
     int width;
     int height;
@@ -26,6 +30,11 @@ struct scene{
 struct scene *new_scene(int width, int height);
 struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content);
 struct element *get_element(struct scene *s, char *id);
+struct element *shift(struct scene *s);
+struct stack *new_stack();
+bool destroy_stack(struct stack *s);
+bool push(struct stack *s, struct element *el);
+struct element *pop(struct stack *s);
 bool add_to_scene(struct scene *s, struct element *el);
 bool remove_from_scene(struct scene *s, char *id);
 void destroy_scene(struct scene *s);
@@ -41,6 +50,7 @@ void bottom_element(struct scene *s, struct element *el);
 void top_element(struct scene *s, struct element *el);
 void list_elements(struct scene *s);
 void show_element(struct scene *s, struct element *el);
+void reverse_elements(struct scene *s);
 void reset_tail(struct scene *s);
 
 #endif
