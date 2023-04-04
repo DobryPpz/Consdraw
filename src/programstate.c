@@ -47,6 +47,77 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     clear_screen(c->scene);
     draw_scene(c->scene);
 }
+void line_command(FILE *fp, char **saveptr, struct context *c){
+    char name[32] = {'\0'};
+    char relation[32] = {'\0'};
+    int start_x;
+    int start_y;
+    int end_x;
+    int end_y;
+    char paint;
+    char *token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("name of line was not given\n");
+        return;
+    }
+    memmove(name,token,31);
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL || strcmp(token,"=")!=0){
+        printf("wrong relation\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("starting x coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&start_x);
+    if(start_x<0){
+        printf("wrong starting x coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("starting y coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&start_y);
+    if(start_y<0){
+        printf("wrong starting y coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("ending x coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&end_x);
+    if(end_x<0){
+        printf("wrong ending x coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("ending y coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&end_y);
+    if(end_y<0){
+        printf("wrong ending y coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("line paint was not given\n");
+        return;
+    }
+    paint = token[0];
+    //create line content
+    //create new element with that content
+    //add the element to the scene
+    clear_screen(c->scene);
+    draw_scene(c->scene);
+}
 void delete_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
     struct drawing *d;
