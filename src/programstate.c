@@ -55,12 +55,18 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
     int end_x;
     int end_y;
     char paint;
+    struct element *el = NULL;
     char *token = strtok_r(NULL," \n\t",saveptr);
     if(token==NULL){
         printf("name of line was not given\n");
         return;
     }
     memmove(name,token,31);
+    el = get_element(c->scene,name);
+    if(el){
+        printf("the element called like that already exists in the scene %s %s\n",name,el->id);
+        return;
+    }
     token = strtok_r(NULL," \n\t",saveptr);
     if(token==NULL || strcmp(token,"=")!=0){
         printf("wrong relation\n");
@@ -113,8 +119,42 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
     }
     paint = token[0];
     //create line content
+    int left_x = min_int(start_x,end_x);
+    int right_x = max_int(start_x,end_x);
+    int up_y = min_int(start_y,end_y);
+    int down_y = max_int(start_y,end_y);
+    int part_for_y;
+    int part_for_x;
+    char **content = (char**)calloc(c->scene->height,sizeof(char*));
+    if(content==NULL){
+        printf("could not allocate enough memory for line content\n");
+        return;
+    }
+    for(int i=0;i<c->scene->height;i++){
+        content[i] = (char*)malloc(c->scene->width*sizeof(char));
+    }
+    for(int i=0;i<c->scene->height;i++){
+        for(int j=0;j<c->scene->width;j++){
+            if(j>=left_x && j<=right_x && i>=up_y && i<=down_y){
+                part_for_y = (i-up_y)*(right_x-left_x);
+                part_for_x = (j-left_x)*(down_y-up_y);
+                if(abs(part_for_x-part_for_y)<10){
+                    content[i][j] = paint;
+                }
+                else{
+                    content[i][j] = ' ';
+                }
+            }
+            else{
+                content[i][j] = ' ';
+            }
+        }
+    }
     //create new element with that content
+    el = new_element(name,0,0,c->scene->height,c->scene->width,content);
+    if(!el) return;
     //add the element to the scene
+    if(!add_to_scene(c->scene,el)) return;
     clear_screen(c->scene);
     draw_scene(c->scene);
 }
@@ -451,6 +491,7 @@ void read_drawing(FILE *fp, struct context *c){
         if(strlen(c->line)>1){
             token = strtok_r(c->line," \n\t",&saveptr);
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
+            else if(strcmp(token,"line")==0) line_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"down")==0) down_command(fp,&saveptr,c);
