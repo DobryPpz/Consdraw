@@ -151,6 +151,7 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
         }
     }
     //create new element with that content
+    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
     el = new_element(name,0,0,c->scene->height,c->scene->width,content);
     if(!el) return;
     //add the element to the scene
