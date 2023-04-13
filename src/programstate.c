@@ -118,7 +118,6 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
         return;
     }
     paint = token[0];
-    //create line content
     int left_x = min_int(start_x,end_x);
     int right_x = max_int(start_x,end_x);
     int up_y = min_int(start_y,end_y);
@@ -138,7 +137,7 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
             if(j>=left_x && j<=right_x && i>=up_y && i<=down_y){
                 part_for_y = (i-up_y)*(right_x-left_x);
                 part_for_x = (j-left_x)*(down_y-up_y);
-                if(abs(part_for_x-part_for_y)<10){
+                if(abs(part_for_x-part_for_y)<5){
                     content[i][j] = paint;
                 }
                 else{
@@ -150,11 +149,9 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
-    //create new element with that content
     add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
     el = new_element(name,0,0,c->scene->height,c->scene->width,content);
     if(!el) return;
-    //add the element to the scene
     if(!add_to_scene(c->scene,el)) return;
     clear_screen(c->scene);
     draw_scene(c->scene);
