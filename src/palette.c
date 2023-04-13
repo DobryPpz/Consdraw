@@ -13,12 +13,7 @@ void destroy_tree(struct drawing *d){
     if(!d) return;
     destroy_tree(d->left);
     destroy_tree(d->right);
-    if(d->content){
-        for(int i=0;i<d->content_height;i++){
-            if(d->content[i]) free(d->content[i]);
-        }
-        free(d->content);
-    }
+    d->content = NULL;
     if(d->name){
         free(d->name);
     }
