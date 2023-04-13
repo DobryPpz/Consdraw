@@ -266,6 +266,7 @@ void read_menu(FILE *fp, struct context *c){
 }
 void read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
+    c->c_list = new_content_list();
     bool read_width = false;
     bool read_height = false;
     bool is_reading_shape = false;
@@ -283,6 +284,7 @@ void read_parsing(FILE *fp, struct context *c){
         if(is_reading_shape){
             if(line[0]=='e' && line[1]=='n' && line[2]=='d' && is_reading_shape){
                 is_reading_shape = false;
+                add_content(c->c_list,new_content_node(content,content_width,content_height));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
                 add_drawing(c->palette,d);
                 name = NULL;
@@ -405,6 +407,7 @@ struct context *new_context(){
     c->palette = NULL;
     c->read = NULL;
     c->scene = NULL;
+    c->c_list = NULL;
     return c;
 }
 void destroy_context(struct context *c){
@@ -412,6 +415,7 @@ void destroy_context(struct context *c){
     if(c->line) free(c->line);
     if(c->scene) destroy_scene(c->scene);
     if(c->palette) destroy_palette(c->palette);
+    if(c->c_list) destroy_content_list(c->c_list);
     free(c);
 }
 bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
