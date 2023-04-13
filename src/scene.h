@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <utilities.h>
+#include <content.h>
 
 struct element{
     char *id;

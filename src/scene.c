@@ -1,5 +1,4 @@
 #include <scene.h>
-#include <utilities.h>
 
 void destroy_scene(struct scene *s){
     if(s!=NULL){

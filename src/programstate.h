@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <content.h>
 
 //menu
 //parsing file
@@ -16,11 +17,13 @@ struct context{
     size_t linelen;
     struct scene *scene;
     struct palette *palette;
+    struct content_list *c_list;
     void(*read)(FILE*,struct context*);
 };
 
 void load_command(FILE *fp, char **saveptr, struct context *c);
 void draw_command(FILE *fp, char **saveptr, struct context *c);
+void line_command(FILE *fp, char **saveptr, struct context *c);
 void delete_command(FILE *fp, char **saveptr, struct context *c);
 void menu_command(FILE *fp, char **saveptr, struct context *c);
 void end_command(FILE *fp, char **saveptr, struct context *c);

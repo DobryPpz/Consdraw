@@ -47,6 +47,115 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     clear_screen(c->scene);
     draw_scene(c->scene);
 }
+void line_command(FILE *fp, char **saveptr, struct context *c){
+    char name[32] = {'\0'};
+    char relation[32] = {'\0'};
+    int start_x;
+    int start_y;
+    int end_x;
+    int end_y;
+    char paint;
+    struct element *el = NULL;
+    char *token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("name of line was not given\n");
+        return;
+    }
+    memmove(name,token,31);
+    el = get_element(c->scene,name);
+    if(el){
+        printf("the element called like that already exists in the scene %s %s\n",name,el->id);
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL || strcmp(token,"=")!=0){
+        printf("wrong relation\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("starting x coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&start_x);
+    if(start_x<0){
+        printf("wrong starting x coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("starting y coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&start_y);
+    if(start_y<0){
+        printf("wrong starting y coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("ending x coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&end_x);
+    if(end_x<0){
+        printf("wrong ending x coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("ending y coordinate was not given\n");
+        return;
+    }
+    sscanf(token,"%d",&end_y);
+    if(end_y<0){
+        printf("wrong ending y coordinate value\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("line paint was not given\n");
+        return;
+    }
+    paint = token[0];
+    int left_x = min_int(start_x,end_x);
+    int right_x = max_int(start_x,end_x);
+    int up_y = min_int(start_y,end_y);
+    int down_y = max_int(start_y,end_y);
+    int part_for_y;
+    int part_for_x;
+    char **content = (char**)calloc(c->scene->height,sizeof(char*));
+    if(content==NULL){
+        printf("could not allocate enough memory for line content\n");
+        return;
+    }
+    for(int i=0;i<c->scene->height;i++){
+        content[i] = (char*)malloc(c->scene->width*sizeof(char));
+    }
+    for(int i=0;i<c->scene->height;i++){
+        for(int j=0;j<c->scene->width;j++){
+            if(j>=left_x && j<=right_x && i>=up_y && i<=down_y){
+                part_for_y = (i-up_y)*(right_x-left_x);
+                part_for_x = (j-left_x)*(down_y-up_y);
+                if(abs(part_for_x-part_for_y)<5){
+                    content[i][j] = paint;
+                }
+                else{
+                    content[i][j] = ' ';
+                }
+            }
+            else{
+                content[i][j] = ' ';
+            }
+        }
+    }
+    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
+    el = new_element(name,0,0,c->scene->height,c->scene->width,content);
+    if(!el) return;
+    if(!add_to_scene(c->scene,el)) return;
+    clear_screen(c->scene);
+    draw_scene(c->scene);
+}
 void delete_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
     struct drawing *d;
@@ -266,6 +375,7 @@ void read_menu(FILE *fp, struct context *c){
 }
 void read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
+    c->c_list = new_content_list();
     bool read_width = false;
     bool read_height = false;
     bool is_reading_shape = false;
@@ -283,6 +393,7 @@ void read_parsing(FILE *fp, struct context *c){
         if(is_reading_shape){
             if(line[0]=='e' && line[1]=='n' && line[2]=='d' && is_reading_shape){
                 is_reading_shape = false;
+                add_content(c->c_list,new_content_node(content,content_width,content_height));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
                 add_drawing(c->palette,d);
                 name = NULL;
@@ -380,6 +491,7 @@ void read_drawing(FILE *fp, struct context *c){
         if(strlen(c->line)>1){
             token = strtok_r(c->line," \n\t",&saveptr);
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
+            else if(strcmp(token,"line")==0) line_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"down")==0) down_command(fp,&saveptr,c);
@@ -405,6 +517,7 @@ struct context *new_context(){
     c->palette = NULL;
     c->read = NULL;
     c->scene = NULL;
+    c->c_list = NULL;
     return c;
 }
 void destroy_context(struct context *c){
@@ -412,6 +525,7 @@ void destroy_context(struct context *c){
     if(c->line) free(c->line);
     if(c->scene) destroy_scene(c->scene);
     if(c->palette) destroy_palette(c->palette);
+    if(c->c_list) destroy_content_list(c->c_list);
     free(c);
 }
 bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
