@@ -196,7 +196,7 @@ void clear_canvas(struct scene *s){
 }
 void clear_screen(struct scene *s){
     clear_canvas(s);
-    system("clear");
+    printf("\033[2J");
     load_scene(s);
 }
 void clear_scene(struct scene *s){
