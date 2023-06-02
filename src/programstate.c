@@ -48,8 +48,8 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     draw_scene(c->scene);
 }
 void line_command(FILE *fp, char **saveptr, struct context *c){
-    char name[32] = {'\0'};
-    char relation[32] = {'\0'};
+    char name[32] = {0};
+    char relation[32] = {0};
     int start_x;
     int start_y;
     int end_x;
@@ -146,6 +146,105 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
             }
             else{
                 content[i][j] = ' ';
+            }
+        }
+    }
+    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
+    el = new_element(name,0,0,c->scene->height,c->scene->width,content);
+    if(!el) return;
+    if(!add_to_scene(c->scene,el)) return;
+    clear_screen(c->scene);
+    draw_scene(c->scene);
+}
+void circle_command(FILE *fp, char **saveptr, struct context *c){
+    char name[32] = {0};
+    char relation[32] = {0};
+    int x;
+    int y;
+    int radius;
+    char paint;
+    char arg[32] = {0};
+    bool fill = false;
+    char *token = NULL;
+    struct element *el = NULL;
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("name of circle was not given\n");
+        return;
+    }
+    memmove(name,token,31);
+    el = get_element(c->scene,name);
+    if(el){
+        printf("the element called like that already exists in the scene %s %s\n",name,el->id);
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL || strcmp(token,"=")!=0){
+        printf("wrong relation\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("the x coordinate was not given\n");
+        return;
+    }
+    if(sscanf(token,"%d",&x)==0 || x<0){
+        printf("wrong x coordinate\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("the y coordinate was not given\n");
+        return;
+    }
+    if(sscanf(token,"%d",&y)==0 || y<0){
+        printf("wrong y coordinate\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("the radius was not given\n");
+        return;
+    }
+    if(sscanf(token,"%d",&radius)==0 || radius<0){
+        printf("wrong radius\n");
+        return;
+    }
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token==NULL){
+        printf("the circle paint was not given\n");
+        return;
+    }
+    paint = token[0];
+    token = strtok_r(NULL," \n\t",saveptr);
+    if(token!=NULL){
+        memmove(arg,token,31);
+        if(strcmp(arg,"fill")==0){
+            fill = true;
+        }
+        else{
+            printf("wrong fill argument\n");
+            return;
+        }
+    }
+    char **content = (char**)calloc(c->scene->height,sizeof(char*));
+    if(content==NULL){
+        printf("could not allocate enough memory for circle content\n");
+        return;
+    }
+    for(int i=0;i<c->scene->height;i++){
+        content[i] = (char*)malloc(c->scene->width*sizeof(char));
+    }
+    for(int i=0;i<c->scene->height;i++){
+        for(int j=0;j<c->scene->width;j++){
+            if(absl(dist(i,j,x,y)-radius)<=1){
+                content[i][j] = paint;
+            }
+            else{
+                content[i][j] = ' ';
+            }
+            if(fill && dist(i,j,x,y)<radius){
+                content[i][j] = paint;
             }
         }
     }
@@ -492,6 +591,7 @@ void read_drawing(FILE *fp, struct context *c){
             token = strtok_r(c->line," \n\t",&saveptr);
             if(strcmp(token,"draw")==0) draw_command(fp,&saveptr,c);
             else if(strcmp(token,"line")==0) line_command(fp,&saveptr,c);
+            else if(strcmp(token,"circle")==0) circle_command(fp,&saveptr,c);
             else if(strcmp(token,"delete")==0) delete_command(fp,&saveptr,c);
             else if(strcmp(token,"move")==0) move_command(fp,&saveptr,c);
             else if(strcmp(token,"down")==0) down_command(fp,&saveptr,c);
