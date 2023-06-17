@@ -1,6 +1,4 @@
 #include <programstate.h>
-#include <png.h>
-#include <topng.h>
 
 void load_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;

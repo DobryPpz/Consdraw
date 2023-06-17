@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <content.h>
+#include <png.h>
+#include <topng.h>
 
 //menu
 //parsing file

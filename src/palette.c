@@ -1,7 +1,4 @@
-#include <stdbool.h>
-#include <stdlib.h>
 #include <palette.h>
-#include <string.h>
 
 struct palette *new_palette(){
     struct palette *p = (struct palette*)malloc(sizeof(struct palette));
