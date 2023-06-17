@@ -6,10 +6,11 @@ struct content_list *new_content_list(){
     l->head = NULL;
     return l;
 }
-struct content_node *new_content_node(char **content, int content_width, int content_height){
+struct content_node *new_content_node(char **content, int content_width, int content_height, enum content_type type){
     struct content_node *n = (struct content_node*)malloc(sizeof(struct content_node));
     if(n==NULL) return NULL;
     n->content = content;
+    n->type = type;
     n->content_width = content_width;
     n->content_height = content_height;
     n->next = NULL;

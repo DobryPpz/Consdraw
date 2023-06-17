@@ -1,0 +1,36 @@
+width 80
+height 30
+begin triangle
+      o
+     ooo
+    ooooo
+end
+begin square
+[][]
+[][]
+end
+begin bear
+ __         __
+/  \.-"""-./  \
+\    -   -    /
+ |   o   o   |
+ \  .-'''-.  /
+  '-\__Y__/-'
+     `---`
+end
+begin rhombus
+  O
+ OOO
+OOOOO
+ OOO
+  O
+end
+
+scene
+
+draw t1 = triangle 0 0
+draw s1 = square 10 10
+draw m1 = bear 0 10
+draw r1 = rhombus 10 0
+line l1 = 0 0 20 20 x
+circle c1 = 20 20 4 o fill

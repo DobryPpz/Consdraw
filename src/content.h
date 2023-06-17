@@ -3,9 +3,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+enum content_type {DRAWING,LINE,CIRCLE};
+
 struct content_node{
     int content_width;
     int content_height;
+    enum content_type type;
     char **content;
     struct content_node *next;
 };
@@ -15,7 +18,7 @@ struct content_list{
 };
 
 struct content_list *new_content_list();
-struct content_node *new_content_node(char **content, int content_width, int content_height);
+struct content_node *new_content_node(char **content, int content_width, int content_height, enum content_type type);
 void destroy_content_list(struct content_list *l);
 void destroy_content_node(struct content_node *n);
 bool add_content(struct content_list *l, struct content_node *n);

@@ -35,6 +35,8 @@ void continue_command(FILE *fp, char **saveptr, struct context *c){
     int content_width;
     int scene_width;
     int scene_height;
+    int srclen;
+    token = strtok_r(NULL," \n\t",saveptr);
     if(!token){
         printf("Did not specify a file\n");
         return;
@@ -44,15 +46,18 @@ void continue_command(FILE *fp, char **saveptr, struct context *c){
         printf("Could not open the file\n");
         return;
     }
+    srclen = strlen(token);
+    c->source = (char*)calloc(srclen+1,sizeof(char));
+    sprintf(c->source,"%s",token);
     memset(c->line,0,c->linelen);
     while(getline(&c->line,&c->linelen,handle)!=EOF){
-        if(strcmp(c->line,"scene")==0){
+        if(memcmp(c->line,"scene",5)==0){
             break;
         }
         if(flags.is_reading_shape){
             if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d'){
                 flags.is_reading_shape = false;
-                add_content(c->c_list,new_content_node(content,content_width,content_height));
+                add_content(c->c_list,new_content_node(content,content_width,content_height,DRAWING));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
                 add_drawing(c->palette,d);
                 name = NULL;
@@ -136,9 +141,8 @@ void continue_command(FILE *fp, char **saveptr, struct context *c){
         }
         memset(c->line,0,c->linelen);
     }
-    while(getline(&c->line,&c->linelen,handle)!=EOF){
-
-    }
+    change_state(c,handle,read_drawing);
+    fclose(handle);
     change_state(c,stdin,read_drawing);
 }
 void draw_command(FILE *fp, char **saveptr, struct context *c){
@@ -172,7 +176,6 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
 }
 void line_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {0};
-    char relation[32] = {0};
     int start_x;
     int start_y;
     int end_x;
@@ -272,7 +275,7 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
-    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
+    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height,LINE));
     el = new_element(name,0,0,c->scene->height,c->scene->width,content);
     if(!el) return;
     if(!add_to_scene(c->scene,el)) return;
@@ -282,7 +285,6 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
 void circle_command(FILE *fp, char **saveptr, struct context *c){
     struct flags flags;
     char name[32] = {0};
-    char relation[32] = {0};
     int x;
     int y;
     int radius;
@@ -372,7 +374,7 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
-    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
+    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height,CIRCLE));
     el = new_element(name,0,0,c->scene->height,c->scene->width,content);
     if(!el) return;
     if(!add_to_scene(c->scene,el)) return;
@@ -381,7 +383,6 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
 }
 void delete_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
-    struct drawing *d;
     if(sscanf(*saveptr,"%s",name)<1){
         printf("scene element to delete was not specified\n");
         return;
@@ -556,7 +557,7 @@ void write_png_command(FILE *fp, char **saveptr, struct context *c){
     p.fg_g = 255;
     p.fg_b = 255;
     p.fg_a = 255;
-    while(token=strtok_r(NULL," \n\t",saveptr)){
+    while((token=strtok_r(NULL," \n\t",saveptr))!=NULL){
         if(strcmp(token,"-bg")==0){
             if(sscanf(*saveptr,"%hhd %hhd %hhd %hhd",&p.bg_r,&p.bg_g,&p.bg_b,&p.bg_a)<4){
                 printf("Not enough arguments given to select background color\n");
@@ -583,7 +584,6 @@ void write_png_command(FILE *fp, char **saveptr, struct context *c){
 }
 void read_menu(FILE *fp, struct context *c){
     char *token = NULL;
-    FILE *handle = NULL;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
     while(getline(&c->line,&c->linelen,fp)!=EOF){
@@ -591,6 +591,7 @@ void read_menu(FILE *fp, struct context *c){
         if(token){
             if(strcmp(token,"load")==0) load_command(fp,&saveptr,c);
             else if(strcmp(token,"end")==0) end_command(fp,NULL,c);
+            else if(strcmp(token,"continue")==0) continue_command(fp,&saveptr,c);
             else printf("Wrong command\n");
             memset(c->line,0,c->linelen);
         }
@@ -602,7 +603,6 @@ void read_parsing(FILE *fp, struct context *c){
     bool read_width = false;
     bool read_height = false;
     bool is_reading_shape = false;
-    FILE *handle = NULL;
     char *token = NULL;
     char **content = NULL;
     char *name = NULL;
@@ -614,7 +614,7 @@ void read_parsing(FILE *fp, struct context *c){
         if(is_reading_shape){
             if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && is_reading_shape){
                 is_reading_shape = false;
-                add_content(c->c_list,new_content_node(content,content_width,content_height));
+                add_content(c->c_list,new_content_node(content,content_width,content_height,DRAWING));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
                 add_drawing(c->palette,d);
                 name = NULL;
@@ -703,8 +703,6 @@ void read_parsing(FILE *fp, struct context *c){
 }
 void read_drawing(FILE *fp, struct context *c){
     char *token = NULL;
-    int x;
-    int y;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
     while(getline(&c->line,&c->linelen,fp)!=EOF){
