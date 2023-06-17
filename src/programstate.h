@@ -9,13 +9,24 @@
 #include <content.h>
 #include <png.h>
 #include <topng.h>
+#include <stdint.h>
 
 //menu
 //parsing file
 //drawing
 
+#pragma pack(1)
+struct flags{
+    uint8_t read_width:2;
+    uint8_t read_height:2;
+    uint8_t is_reading_shape:2;
+    uint8_t fill:2;
+};
+#pragma pack()
+
 struct context{
     char *line;
+    char *source;
     size_t linelen;
     struct scene *scene;
     struct palette *palette;
@@ -24,6 +35,7 @@ struct context{
 };
 
 void load_command(FILE *fp, char **saveptr, struct context *c);
+void continue_command(FILE *fp, char **saveptr, struct context *c);
 void draw_command(FILE *fp, char **saveptr, struct context *c);
 void line_command(FILE *fp, char **saveptr, struct context *c);
 void circle_command(FILE *fp, char **saveptr, struct context *c);

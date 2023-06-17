@@ -4,17 +4,142 @@ void load_command(FILE *fp, char **saveptr, struct context *c){
     char *token = NULL;
     FILE *handle = NULL;
     token = strtok_r(NULL," \n\t",saveptr);
+    int srclen;
     if(!token){
         printf("Did not specify a file\n");
         return;
     }
     handle = fopen(token,"r");
     if(handle){
+        srclen = strlen(token);
+        c->source = (char*)calloc(srclen+1,sizeof(char));
+        sprintf(c->source,"%s",token);
         change_state(c,handle,read_parsing);
     }
     else{
         printf("Could not open the file\n");
     }
+}
+void continue_command(FILE *fp, char **saveptr, struct context *c){
+    struct flags flags;
+    c->palette = new_palette();
+    c->c_list = new_content_list();
+    flags.read_width = false;
+    flags.read_height = false;
+    flags.is_reading_shape = false;
+    FILE *handle = NULL;
+    char *token = NULL;
+    char **content = NULL;
+    char *name = NULL;
+    int content_height;
+    int content_width;
+    int scene_width;
+    int scene_height;
+    if(!token){
+        printf("Did not specify a file\n");
+        return;
+    }
+    handle = fopen(token,"r");
+    if(!handle){
+        printf("Could not open the file\n");
+        return;
+    }
+    memset(c->line,0,c->linelen);
+    while(getline(&c->line,&c->linelen,handle)!=EOF){
+        if(strcmp(c->line,"scene")==0){
+            break;
+        }
+        if(flags.is_reading_shape){
+            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d'){
+                flags.is_reading_shape = false;
+                add_content(c->c_list,new_content_node(content,content_width,content_height));
+                struct drawing *d = new_drawing(name,content,content_height,content_width);
+                add_drawing(c->palette,d);
+                name = NULL;
+                content = NULL;
+                content_height = 0;
+            }
+            else{
+                content_height++;
+                c->line[strlen(c->line)-1] = '\0';
+                content = (char**)realloc(content,content_height*sizeof(char*));
+                content[content_height-1] = (char*)calloc(content_width,sizeof(char));
+                sprintf(content[content_height-1],"%s",c->line);
+            }
+        }
+        else{
+            token = strtok(c->line," \n\t");
+            if(token!=NULL){
+                if(strcmp(token,"begin")==0){
+                    if(!(flags.read_width && flags.read_height)){
+                        printf("file error: did not specify width and height parameters\n");
+                        end_command(fp,NULL,c);
+                    }
+                    else{
+                        if(c->scene==NULL){
+                            c->scene = new_scene(scene_width,scene_height);
+                        }
+                        token = strtok(NULL," \n\t");
+                        if(token!=NULL){
+                            name = (char*)calloc(scene_width,sizeof(char));
+                            sscanf(token,"%s",name);
+                            flags.is_reading_shape = true;
+                            content_height = 0;
+                        }
+                        else{
+                            fclose(fp);
+                            free(c->line);
+                            printf("file error: did not specify a name for the drawing\n");
+                            end_command(fp,NULL,c);
+                        }
+                    }
+                }
+                else if(strcmp(token,"width")==0){
+                    token = strtok(NULL," \n\t");
+                    if(token!=NULL){
+                        if(sscanf(token,"%d",&scene_width)==0){
+                            fclose(fp);
+                            free(c->line);
+                            printf("file error: did not specify correct width value\n");
+                            end_command(fp,NULL,c);
+                        }
+                        scene_width = scene_width>128?128:scene_width;
+                        content_width = scene_width;
+                        flags.read_width = true;
+                    }
+                    else{
+                        fclose(fp);
+                        free(c->line);
+                        printf("file error: did not specify any width value\n");
+                        end_command(fp,NULL,c);
+                    }
+                }
+                else if(strcmp(token,"height")==0){
+                    token = strtok(NULL," \n\t");
+                    if(token!=NULL){
+                        if(sscanf(token,"%d",&scene_height)==0){
+                            fclose(fp);
+                            free(c->line);
+                            printf("file error: did not specify correct height value\n");
+                            end_command(fp,NULL,c);
+                        }
+                        flags.read_height = true;
+                    }
+                    else{
+                        fclose(fp);
+                        free(c->line);
+                        printf("file error: did not specify any height value\n");
+                        end_command(fp,NULL,c);
+                    }
+                }
+            }
+        }
+        memset(c->line,0,c->linelen);
+    }
+    while(getline(&c->line,&c->linelen,handle)!=EOF){
+
+    }
+    change_state(c,stdin,read_drawing);
 }
 void draw_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
@@ -155,6 +280,7 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
     draw_scene(c->scene);
 }
 void circle_command(FILE *fp, char **saveptr, struct context *c){
+    struct flags flags;
     char name[32] = {0};
     char relation[32] = {0};
     int x;
@@ -162,7 +288,7 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
     int radius;
     char paint;
     char arg[32] = {0};
-    bool fill = false;
+    flags.fill = false;
     char *token = NULL;
     struct element *el = NULL;
     token = strtok_r(NULL," \n\t",saveptr);
@@ -218,7 +344,7 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
     if(token!=NULL){
         memmove(arg,token,31);
         if(strcmp(arg,"fill")==0){
-            fill = true;
+            flags.fill = true;
         }
         else{
             printf("wrong fill argument\n");
@@ -241,7 +367,7 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
             else{
                 content[i][j] = ' ';
             }
-            if(fill && dist(i,j,x,y)<radius){
+            if(flags.fill && dist(i,j,x,y)<radius){
                 content[i][j] = paint;
             }
         }
@@ -478,17 +604,15 @@ void read_parsing(FILE *fp, struct context *c){
     bool is_reading_shape = false;
     FILE *handle = NULL;
     char *token = NULL;
-    size_t linelen = 128;
-    char *line = (char*)calloc(linelen,sizeof(char));
     char **content = NULL;
     char *name = NULL;
     int content_height;
     int content_width;
     int scene_width;
     int scene_height;
-    while(getline(&line,&linelen,fp)!=EOF){
+    while(getline(&c->line,&c->linelen,fp)!=EOF){
         if(is_reading_shape){
-            if(line[0]=='e' && line[1]=='n' && line[2]=='d' && is_reading_shape){
+            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && is_reading_shape){
                 is_reading_shape = false;
                 add_content(c->c_list,new_content_node(content,content_width,content_height));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
@@ -499,19 +623,19 @@ void read_parsing(FILE *fp, struct context *c){
             }
             else{
                 content_height++;
-                line[strlen(line)-1] = '\0';
+                c->line[strlen(c->line)-1] = '\0';
                 content = (char**)realloc(content,content_height*sizeof(char*));
                 content[content_height-1] = (char*)calloc(content_width,sizeof(char));
-                sprintf(content[content_height-1],"%s",line);
+                sprintf(content[content_height-1],"%s",c->line);
             }
         }
         else{
-            token = strtok(line," \n\t");
+            token = strtok(c->line," \n\t");
             if(token!=NULL){
                 if(strcmp(token,"begin")==0){
                     if(!(read_width && read_height)){
                         printf("file error: did not specify width and height parameters\n");
-                        exit(EXIT_FAILURE);
+                        end_command(fp,NULL,c);
                     }
                     else{
                         if(c->scene==NULL){
@@ -526,9 +650,9 @@ void read_parsing(FILE *fp, struct context *c){
                         }
                         else{
                             fclose(fp);
-                            free(line);
+                            free(c->line);
                             printf("file error: did not specify a name for the drawing\n");
-                            exit(EXIT_FAILURE);
+                            end_command(fp,NULL,c);
                         }
                     }
                 }
@@ -537,9 +661,9 @@ void read_parsing(FILE *fp, struct context *c){
                     if(token!=NULL){
                         if(sscanf(token,"%d",&scene_width)==0){
                             fclose(fp);
-                            free(line);
+                            free(c->line);
                             printf("file error: did not specify correct width value\n");
-                            exit(EXIT_FAILURE);
+                            end_command(fp,NULL,c);
                         }
                         scene_width = scene_width>128?128:scene_width;
                         content_width = scene_width;
@@ -547,9 +671,9 @@ void read_parsing(FILE *fp, struct context *c){
                     }
                     else{
                         fclose(fp);
-                        free(line);
+                        free(c->line);
                         printf("file error: did not specify any width value\n");
-                        exit(EXIT_FAILURE);
+                        end_command(fp,NULL,c);
                     }
                 }
                 else if(strcmp(token,"height")==0){
@@ -557,25 +681,24 @@ void read_parsing(FILE *fp, struct context *c){
                     if(token!=NULL){
                         if(sscanf(token,"%d",&scene_height)==0){
                             fclose(fp);
-                            free(line);
+                            free(c->line);
                             printf("file error: did not specify correct height value\n");
-                            exit(EXIT_FAILURE);
+                            end_command(fp,NULL,c);
                         }
                         read_height = true;
                     }
                     else{
                         fclose(fp);
-                        free(line);
+                        free(c->line);
                         printf("file error: did not specify any height value\n");
-                        exit(EXIT_FAILURE);
+                        end_command(fp,NULL,c);
                     }
                 }
             }
         }
-        memset(line,0,linelen);
+        memset(c->line,0,c->linelen);
     }
     fclose(fp);
-    free(line);
     change_state(c,stdin,read_drawing);
 }
 void read_drawing(FILE *fp, struct context *c){
@@ -621,6 +744,7 @@ struct context *new_context(){
 void destroy_context(struct context *c){
     if(!c) return;
     if(c->line) free(c->line);
+    if(c->source) free(c->source);
     if(c->scene) destroy_scene(c->scene);
     if(c->palette) destroy_palette(c->palette);
     if(c->c_list) destroy_content_list(c->c_list);
