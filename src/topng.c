@@ -70,8 +70,6 @@ bool write_png_file(char *filename, struct scene *s, struct params *p){
     // Initialization of png "canvas"(row_pointers) and filling it with bg color
     int width = s->width*16;
     int height = s->height*16;
-    png_byte color_type;
-    png_byte bit_depth;
     png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep)*height);
     for(int y=0;y<height;y++){
         row_pointers[y] = (png_byte*)malloc(4*width);

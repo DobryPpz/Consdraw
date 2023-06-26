@@ -1,0 +1,31 @@
+width 80
+height 30
+begin triangle
+      o
+     ooo
+    ooooo
+end
+begin square
+[][]
+[][]
+end
+begin bear
+ __         __
+/  \.-"""-./  \
+\    -   -    /
+ |   o   o   |
+ \  .-'''-.  /
+  '-\__Y__/-'
+     `---`
+end
+begin rhombus
+  O
+ OOO
+OOOOO
+ OOO
+  O
+end
+scene
+draw t1 = triangle 0 0
+draw t2 = triangle 10 0
+line l1 = 0 10 20 10 x
