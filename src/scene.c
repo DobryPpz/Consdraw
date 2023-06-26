@@ -44,13 +44,14 @@ struct scene *new_scene(int width, int height){
     }
     return s;
 }
-struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content){
+struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content, enum content_type type){
     struct element *el = (struct element*)malloc(sizeof(struct element));
     if(el==NULL) return NULL;
     el->id = (char*)calloc(strlen(id)+1,sizeof(char));
     strcpy(el->id,id);
     el->x = x;
     el->y = y;
+    el->type = type;
     el->content_height = content_height;
     el->content_width = content_width;
     el->content = content;
