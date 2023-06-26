@@ -146,7 +146,60 @@ void continue_command(FILE *fp, char **saveptr, struct context *c){
     change_state(c,stdin,read_drawing);
 }
 void persist_command(FILE *fp, char **saveptr, struct context *c){
-
+    char *name = strtok_r(NULL," \n\t",saveptr);
+    FILE *dst = fopen(name,"w");
+    FILE *src = fopen(c->source,"r");
+    if(dst==NULL || src==NULL){
+        printf("error in persist: could not create output file\n");
+        return;
+    }
+    memset(c->line,0,c->linelen);
+    while(getline(&c->line,&c->linelen,src)!=EOF){
+        if(memcmp(c->line,"scene",5)==0){
+            break;
+        }
+        fputs(c->line,dst);
+        memset(c->line,0,c->linelen);
+    }
+    fputs("\nscene\n",dst);
+    if(c->scene->head==NULL){
+        printf("there's nothing to persist\n");
+        return;
+    }
+    struct element *traverser = c->scene->head;
+    while(traverser!=NULL){
+        switch(traverser->type){
+            case DRAWING:
+                fprintf(dst,"draw %s = %s %d %d\n",traverser->id,
+                    traverser->props.drawing_name,
+                    traverser->props.x,
+                    traverser->props.y);
+                break;
+            case LINE:
+                fprintf(dst,"line %s = %d %d %d %d %c\n",traverser->id,
+                    traverser->props.x,
+                    traverser->props.y,
+                    traverser->props.end_x,
+                    traverser->props.end_y,
+                    traverser->props.paint);
+                break;
+            case CIRCLE:
+                fprintf(dst,"circle %s = %d %d %d %c %s",traverser->id,
+                    traverser->props.x,
+                    traverser->props.y,
+                    traverser->props.radius,
+                    traverser->props.paint,
+                    (traverser->props.fill ? "fill\n" : "\n"));
+                break;
+        }
+        traverser = traverser->next;
+    }
+    fclose(src);
+    fclose(dst);
+    printf("persisted. press any key\n");
+    getchar();
+    clear_screen(c->scene);
+    draw_scene(c->scene);
 }
 void draw_command(FILE *fp, char **saveptr, struct context *c){
     char name[32] = {'\0'};
@@ -154,6 +207,7 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
     char drawing[32] = {'\0'};
     int x;
     int y;
+    struct elem_props props;
     struct drawing *d = NULL;
     struct element *el = NULL;
     if(sscanf(*saveptr,"%s %s %s %d %d",name,relation,drawing,&x,&y)<5){
@@ -171,7 +225,11 @@ void draw_command(FILE *fp, char **saveptr, struct context *c){
         printf("the is no drawing with this name in palette memory\n");
         return;
     }
-    el = new_element(name,x,y,d->content_height,d->content_width,d->content,DRAWING);
+    props.x = x;
+    props.y = y;
+    memset(props.drawing_name,0,128);
+    sprintf(props.drawing_name,"%s",drawing);
+    el = new_element(name,x,y,props,d->content_height,d->content_width,d->content,DRAWING);
     if(!el) return;
     if(!add_to_scene(c->scene,el)) return;
     clear_screen(c->scene);
@@ -184,6 +242,7 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
     int end_x;
     int end_y;
     char paint;
+    struct elem_props props;
     struct element *el = NULL;
     char *token = strtok_r(NULL," \n\t",saveptr);
     if(token==NULL){
@@ -278,8 +337,13 @@ void line_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
+    props.x = start_x;
+    props.y = start_y;
+    props.end_x = end_x;
+    props.end_y = end_y;
+    props.paint = paint;
     add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
-    el = new_element(name,0,0,c->scene->height,c->scene->width,content,LINE);
+    el = new_element(name,0,0,props,c->scene->height,c->scene->width,content,LINE);
     if(!el) return;
     if(!add_to_scene(c->scene,el)) return;
     clear_screen(c->scene);
@@ -292,6 +356,7 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
     int y;
     int radius;
     char paint;
+    struct elem_props props;
     char arg[32] = {0};
     flags.fill = false;
     char *token = NULL;
@@ -377,8 +442,13 @@ void circle_command(FILE *fp, char **saveptr, struct context *c){
             }
         }
     }
+    props.x = x;
+    props.y = y;
+    props.radius = radius;
+    props.paint = paint;
+    props.fill = flags.fill;
     add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
-    el = new_element(name,0,0,c->scene->height,c->scene->width,content,CIRCLE);
+    el = new_element(name,0,0,props,c->scene->height,c->scene->width,content,CIRCLE);
     if(!el) return;
     if(!add_to_scene(c->scene,el)) return;
     clear_screen(c->scene);
