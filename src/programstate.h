@@ -36,6 +36,7 @@ struct context{
 
 void load_command(FILE *fp, char **saveptr, struct context *c);
 void continue_command(FILE *fp, char **saveptr, struct context *c);
+void persist_command(FILE *fp, char **saveptr, struct context *c);
 void draw_command(FILE *fp, char **saveptr, struct context *c);
 void line_command(FILE *fp, char **saveptr, struct context *c);
 void circle_command(FILE *fp, char **saveptr, struct context *c);

@@ -7,12 +7,27 @@
 #include <utilities.h>
 #include <content.h>
 
-struct element{
-    char *id;
+enum content_type {DRAWING,LINE,CIRCLE};
+
+struct elem_props{
     int x;
     int y;
+    int end_x;
+    int end_y;
+    int radius;
+    char paint;
+    bool fill;
+    char drawing_name[128];
+};
+
+struct element{
+    char *id;
+    struct elem_props props;
+    enum content_type type;
     int content_height;
     int content_width;
+    int x;
+    int y;
     char **content;
     struct element *next;
 };
@@ -30,7 +45,7 @@ struct scene{
 };
 
 struct scene *new_scene(int width, int height);
-struct element *new_element(char *id, int x, int y, int content_height, int content_width, char **content);
+struct element *new_element(char *id, int x, int y, struct elem_props props, int content_height, int content_width, char **content, enum content_type type);
 struct element *get_element(struct scene *s, char *id);
 struct element *shift(struct scene *s);
 struct stack *new_stack();
