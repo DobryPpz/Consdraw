@@ -495,7 +495,7 @@ void move_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does not exists in the scene\n");
+    printf("the element with that name does not exist in the scene\n");
 }
 void down_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
@@ -512,7 +512,7 @@ void down_command(FILE *fp, char **saveptr, struct context *c){
     }
     el = get_element(c->scene,name);
     if(!el){
-        printf("the element with that name does not exists in the scene\n");
+        printf("the element with that name does not exist in the scene\n");
         return;
     }
     if(howManyLayers<0){
@@ -541,7 +541,7 @@ void up_command(FILE *fp, char **saveptr, struct context *c){
     }
     el = get_element(c->scene,name);
     if(!el){
-        printf("the element with that name does not exists in the scene\n");
+        printf("the element with that name does not exist in the scene\n");
         return;
     }
     if(howManyLayers<0){
@@ -570,7 +570,7 @@ void bottom_command(FILE *fp, char **saveptr, struct context *c){
         draw_scene(c->scene);
         return;
     }
-    printf("the element with that name does not exists in the scene\n");
+    printf("the element with that name does not exist in the scene\n");
 }
 void top_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return;
