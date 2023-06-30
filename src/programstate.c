@@ -141,6 +141,11 @@ void continue_command(FILE *fp, char **saveptr, struct context *c){
         }
         memset(c->line,0,c->linelen);
     }
+    if(c->scene==NULL || !flags.read_height || !flags.read_width){
+        printf("Couldn't understand the file format\n");
+        fclose(handle);
+        end_command(NULL,NULL,c);
+    }
     change_state(c,handle,read_drawing);
     fclose(handle);
     change_state(c,stdin,read_drawing);
@@ -673,9 +678,10 @@ void read_menu(FILE *fp, struct context *c){
 void read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
     c->c_list = new_content_list();
-    bool read_width = false;
-    bool read_height = false;
-    bool is_reading_shape = false;
+    struct flags flags;
+    flags.read_width = false;
+    flags.read_height = false;
+    flags.is_reading_shape = false;
     char *token = NULL;
     char **content = NULL;
     char *name = NULL;
@@ -684,9 +690,9 @@ void read_parsing(FILE *fp, struct context *c){
     int scene_width;
     int scene_height;
     while(getline(&c->line,&c->linelen,fp)!=EOF){
-        if(is_reading_shape){
-            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && is_reading_shape){
-                is_reading_shape = false;
+        if(flags.is_reading_shape){
+            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && flags.is_reading_shape){
+                flags.is_reading_shape = false;
                 add_content(c->c_list,new_content_node(content,content_width,content_height));
                 struct drawing *d = new_drawing(name,content,content_height,content_width);
                 add_drawing(c->palette,d);
@@ -706,7 +712,7 @@ void read_parsing(FILE *fp, struct context *c){
             token = strtok(c->line," \n\t");
             if(token!=NULL){
                 if(strcmp(token,"begin")==0){
-                    if(!(read_width && read_height)){
+                    if(!(flags.read_width && flags.read_height)){
                         printf("file error: did not specify width and height parameters\n");
                         end_command(fp,NULL,c);
                     }
@@ -718,7 +724,7 @@ void read_parsing(FILE *fp, struct context *c){
                         if(token!=NULL){
                             name = (char*)calloc(scene_width,sizeof(char));
                             sscanf(token,"%s",name);
-                            is_reading_shape = true;
+                            flags.is_reading_shape = true;
                             content_height = 0;
                         }
                         else{
@@ -740,7 +746,7 @@ void read_parsing(FILE *fp, struct context *c){
                         }
                         scene_width = scene_width>128?128:scene_width;
                         content_width = scene_width;
-                        read_width = true;
+                        flags.read_width = true;
                     }
                     else{
                         fclose(fp);
@@ -758,7 +764,7 @@ void read_parsing(FILE *fp, struct context *c){
                             printf("file error: did not specify correct height value\n");
                             end_command(fp,NULL,c);
                         }
-                        read_height = true;
+                        flags.read_height = true;
                     }
                     else{
                         fclose(fp);
@@ -772,6 +778,10 @@ void read_parsing(FILE *fp, struct context *c){
         memset(c->line,0,c->linelen);
     }
     fclose(fp);
+    if(c->scene==NULL || !flags.read_height || !flags.read_width){
+        printf("Couldn't understand the file format\n");
+        end_command(NULL,NULL,c);
+    }
     change_state(c,stdin,read_drawing);
 }
 void read_drawing(FILE *fp, struct context *c){
