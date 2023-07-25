@@ -778,8 +778,12 @@ void read_parsing(FILE *fp, struct context *c){
         memset(c->line,0,c->linelen);
     }
     fclose(fp);
-    if(c->scene==NULL || !flags.read_height || !flags.read_width){
+    if(c->scene==NULL || !flags.read_height || !flags.read_width || flags.is_reading_shape){
         printf("Couldn't understand the file format\n");
+        destroy_content(content,content_height);
+        if(name!=NULL){
+            free(name);
+        }
         end_command(NULL,NULL,c);
     }
     change_state(c,stdin,read_drawing);
