@@ -18,6 +18,7 @@ struct content_list *new_content_list();
 struct content_node *new_content_node(char **content, int content_width, int content_height);
 void destroy_content_list(struct content_list *l);
 void destroy_content_node(struct content_node *n);
+void destroy_content(char **content, int content_height);
 bool add_content(struct content_list *l, struct content_node *n);
 
 #endif

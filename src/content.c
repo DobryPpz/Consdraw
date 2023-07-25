@@ -31,14 +31,19 @@ void destroy_content_list(struct content_list *l){
 void destroy_content_node(struct content_node *n){
     if(n==NULL) return;
     if(n->content!=NULL){
-        for(int i=0;i<n->content_height;i++){
-            if(n->content[i]!=NULL){
-                free(n->content[i]);
-            }
-        }
-        free(n->content);
+        destroy_content(n->content,n->content_height);
     }
     free(n);
+}
+void destroy_content(char **content, int content_height){
+    if(content!=NULL){
+        for(int i=0;i<content_height;i++){
+            if(content[i]!=NULL){
+                free(content[i]);
+            }
+        }
+        free(content);
+    }
 }
 bool add_content(struct content_list *l, struct content_node *n){
     if(l==NULL || n==NULL) return false;
