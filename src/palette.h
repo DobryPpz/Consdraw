@@ -7,22 +7,23 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <hashtable.h>
 
 struct drawing{
     char *name;
     char **content;
     int content_height;
     int content_width;
-    struct drawing *left;
-    struct drawing *right;
     uint8_t height;
 };
 
 struct palette{
-    struct drawing *root;
+    hash_table table;
 };
 
-void destroy_tree(struct drawing *d);
+const void *get_drawing_key(void *drawing);
+int drawing_cmp(const void *drw1, const void *drw2);
+void destroy_drawing(void *drawing);
 struct palette *new_palette();
 void destroy_palette(struct palette *p);
 struct drawing *new_drawing(char *name, char **content, int content_height, int content_width);

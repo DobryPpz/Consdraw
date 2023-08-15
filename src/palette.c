@@ -1,26 +1,35 @@
 #include <palette.h>
 
+const void *get_drawing_key(void *drawing){
+    struct drawing *drw = (struct drawing*)drawing;
+    return (const void*)drw->name;
+}
+int drawing_cmp(const void *drw1, const void *drw2){
+    char *n1 = (char*)drw1;
+    char *n2 = (char*)drw2;
+    if(strcmp(n1,n2)==0){
+        return 1;
+    }
+    return 0;
+}
+void destroy_drawing(void *drawing){
+    struct drawing *drw = (struct drawing*)drawing;
+    if(drw->name){
+        free(drw->name);
+    }
+    free(drw);
+}
 struct palette *new_palette(){
     struct palette *p = (struct palette*)malloc(sizeof(struct palette));
-    p->root = NULL;
-    return p;
-}
-
-void destroy_tree(struct drawing *d){
-    if(!d) return;
-    destroy_tree(d->left);
-    destroy_tree(d->right);
-    d->content = NULL;
-    if(d->name){
-        free(d->name);
+    if(hash_table_init(&p->table,16,hashpjw,drawing_cmp,destroy_drawing,get_drawing_key)!=0){
+        free(p);
+        return NULL;
     }
-    free(d);
+    return p;
 }
 void destroy_palette(struct palette *p){
     if(!p) return;
-    if(p->root){
-        destroy_tree(p->root);
-    }
+    hash_table_destroy(&p->table);
     free(p);
 }
 struct drawing *new_drawing(char *name, char **content, int content_height, int content_width){
@@ -29,50 +38,21 @@ struct drawing *new_drawing(char *name, char **content, int content_height, int 
     d->content = content;
     d->content_height = content_height;
     d->content_width = content_width;
-    d->left = NULL;
-    d->right = NULL;
     d->height = 0;
     return d;
 }
 bool add_drawing(struct palette *p, struct drawing *d){
     if(!(p && d)) return false;
-    if(!p->root){
-        p->root = d;
-        return true;
-    }
-    bool inserted = false;
-    struct drawing *traverser = p->root;
-    while(!inserted){
-        int cmp = strcmp(d->name,traverser->name);
-        if(cmp<0){
-            if(traverser->left!=NULL){
-                traverser = traverser->left;
-            }
-            else{
-                traverser->left = d;
-                inserted = true;
-            }
-        }
-        else{
-            if(traverser->right!=NULL){
-                traverser = traverser->right;
-            }
-            else{
-                traverser->right = d;
-                inserted = true;
-            }
-        }
+    if(hash_table_insert(&p->table,p->table.get_key(d),d)!=0){
+        return false;
     }
     return true;
 }
 struct drawing *get_drawing(struct palette *p, char *name){
-    if(!(p && p->root && name)) return NULL;
-    struct drawing *traverser = p->root;
-    while(traverser){
-        int cmp = strcmp(name,traverser->name);
-        if(cmp==0) return traverser;
-        else if(cmp<0) traverser=traverser->left;
-        else traverser=traverser->right;
+    if(!(p && name)) return NULL;
+    struct drawing *drawing = NULL;
+    if(hash_table_lookup(&p->table,name,(void**)&drawing)!=0){
+        return NULL;
     }
-    return NULL;
+    return drawing;
 }
