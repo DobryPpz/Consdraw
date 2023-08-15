@@ -1,6 +1,7 @@
 #ifndef HASH_TABLE_H_
 #define HASH_TABLE_H_
 #include <list.h>
+#include <stdio.h>
 
 typedef struct hash_table{
     unsigned int buckets;

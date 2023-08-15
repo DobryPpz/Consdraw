@@ -21,7 +21,7 @@ void destroy_drawing(void *drawing){
 }
 struct palette *new_palette(){
     struct palette *p = (struct palette*)malloc(sizeof(struct palette));
-    if(hash_table_init(&p->table,8,hashpjw,drawing_cmp,destroy_drawing,get_drawing_key)!=0){
+    if(hash_table_init(&p->table,2,hashpjw,drawing_cmp,destroy_drawing,get_drawing_key)!=0){
         free(p);
         return NULL;
     }

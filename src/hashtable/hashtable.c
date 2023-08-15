@@ -78,6 +78,8 @@ int hash_table_remove(hash_table *htbl, const void *key, void **data){
     List *list = &htbl->table[hashval];
     for(member=list->head;member!=NULL;member=member->next){
         if(htbl->match(htbl->get_key(member->data),key)){
+            printf("we found the one to remove in hash table\n");
+            getchar();
             if(list_rem_next(list,prev,(void**)&data)==0){
                 htbl->size--;
                 return 0;
@@ -91,19 +93,26 @@ int hash_table_remove(hash_table *htbl, const void *key, void **data){
     return -1;
 }
 int hash_table_upgrade(hash_table *htbl){
-    if((htbl->table=(List*)realloc(htbl->table,2*htbl->buckets))==NULL){
+    List *old_table = htbl->table;
+    List *list = NULL;
+    void *data = NULL;
+    unsigned int old_buckets = htbl->buckets;
+    htbl->table = NULL;
+    if((htbl->table=(List*)calloc(2*htbl->buckets,sizeof(List)))==NULL){
         return -1;
     }
-    List *list = NULL;
-    ListElmt *member = NULL;
-    void *data = NULL;
     htbl->buckets *= 2;
-    for(unsigned int i=0;i<htbl->buckets/2;i++){
-        list = &htbl->table[i];
-        for(member=list->head;member!=NULL;member=member->next){
-            hash_table_remove(htbl,htbl->get_key(member->data),(void**)&data);
-            hash_table_insert(htbl,htbl->get_key(data),data);
+    for(unsigned int i=0;i<htbl->buckets;i++){
+        list_init(&htbl->table[i],htbl->destroy);
+    }
+    for(unsigned int i=0;i<old_buckets;i++){
+        list = &old_table[i];
+        while(list_rem_next(list,NULL,(void**)&data)==0){
+            if(hash_table_insert(htbl,htbl->get_key(data),data)!=0){
+                return -1;
+            }
         }
     }
+    free(old_table);
     return 0;
 }
