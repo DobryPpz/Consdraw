@@ -1,0 +1,54 @@
+width 80
+height 30
+begin triangle
+      o
+     ooo
+    ooooo
+end
+begin square
+[][]
+[][]
+end
+begin bear
+ __         __
+/  \.-"""-./  \
+\    -   -    /
+ |   o   o   |
+ \  .-'''-.  /
+  '-\__Y__/-'
+     `---`
+end
+begin rhombus
+  O
+ OOO
+OOOOO
+ OOO
+  O
+end
+begin curc
+    c
+   u r
+    c
+end
+begin chuk
+    ^
+    |
+    |
+    |
+   o o
+end
+begin dwip
+    /|\
+    \|/
+end
+begin robot
+    O O
+     |
+    ===
+end
+begin czuek
+    O
+   /|\
+    |
+   / \
+end
