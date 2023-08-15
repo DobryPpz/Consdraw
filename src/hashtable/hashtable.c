@@ -48,7 +48,7 @@ int hash_table_lookup(hash_table *htbl, const void *key, void **data){
     unsigned int hashval = (unsigned int)htbl->h(key)%htbl->buckets;
     List *list = &htbl->table[hashval];
     for(member=list->head;member!=NULL;member=member->next){
-        if(htbl->match(member->data,key)){
+        if(htbl->match(htbl->get_key(member->data),key)){
             *data = (void*)member->data;
             return 0;
         }
@@ -77,7 +77,7 @@ int hash_table_remove(hash_table *htbl, const void *key, void **data){
     unsigned int hashval = (unsigned int)htbl->h(key)%htbl->buckets;
     List *list = &htbl->table[hashval];
     for(member=list->head;member!=NULL;member=member->next){
-        if(htbl->match(member->data,key)){
+        if(htbl->match(htbl->get_key(member->data),key)){
             if(list_rem_next(list,prev,(void**)&data)==0){
                 htbl->size--;
                 return 0;
