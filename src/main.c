@@ -1,8 +1,19 @@
 #include <stdio.h>
 #include <programstate.h>
+#include <signal.h>
+
+struct context *ctx;
+
+void sigint_handler(int signo);
 
 int main(int argc, char *argv[]){
-    struct context *ctx = new_context();
+    signal(SIGINT,sigint_handler);
+    ctx = new_context();
     change_state(ctx,stdin,read_menu);
     return 0;
+}
+
+void sigint_handler(int signo){
+    destroy_context(ctx);
+    exit(-1);
 }

@@ -162,6 +162,7 @@ struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
     c->line = (char*)calloc(128,sizeof(char));
     c->linelen = 128;
+    c->source = NULL;
     c->palette = NULL;
     c->read = NULL;
     c->scene = NULL;
