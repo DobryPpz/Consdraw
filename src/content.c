@@ -1,7 +1,10 @@
 #include <content.h>
 
 struct content_list *new_content_list(){
-    struct content_list *l = (struct content_list*)malloc(sizeof(struct content_list));
+    struct content_list *l = NULL;
+    if((l=(struct content_list*)malloc(sizeof(struct content_list)))==NULL){
+        return NULL;
+    }
     if(l==NULL) return NULL;
     l->head = NULL;
     return l;

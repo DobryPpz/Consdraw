@@ -47,7 +47,11 @@ struct scene *new_scene(int width, int height){
 struct element *new_element(char *id, int x, int y, struct elem_props props, int content_height, int content_width, char **content, enum content_type type){
     struct element *el = (struct element*)malloc(sizeof(struct element));
     if(el==NULL) return NULL;
-    el->id = (char*)calloc(strlen(id)+1,sizeof(char));
+    if((el->id = (char*)calloc(strlen(id)+1,sizeof(char)))==NULL){
+        printf("Could not create element id line\n");
+        free(el);
+        return NULL;
+    }
     strcpy(el->id,id);
     el->props = props;
     el->type = type;

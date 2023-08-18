@@ -20,7 +20,10 @@ void destroy_drawing(void *drawing){
     free(drw);
 }
 struct palette *new_palette(){
-    struct palette *p = (struct palette*)malloc(sizeof(struct palette));
+    struct palette *p = NULL; 
+    if((p=(struct palette*)malloc(sizeof(struct palette)))==NULL){
+        return NULL;
+    }
     if(hash_table_init(&p->table,2,hashpjw,drawing_cmp,destroy_drawing,get_drawing_key)!=0){
         free(p);
         return NULL;
@@ -33,7 +36,10 @@ void destroy_palette(struct palette *p){
     free(p);
 }
 struct drawing *new_drawing(char *name, char **content, int content_height, int content_width){
-    struct drawing *d = (struct drawing*)malloc(sizeof(struct drawing));
+    struct drawing *d = NULL; 
+    if((d=(struct drawing*)malloc(sizeof(struct drawing)))==NULL){
+        return NULL;
+    }
     d->name = name;
     d->content = content;
     d->content_height = content_height;
