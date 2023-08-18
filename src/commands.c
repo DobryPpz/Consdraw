@@ -475,6 +475,10 @@ void menu_command(FILE *fp, char **saveptr, struct context *c){
     c->scene = NULL;
     destroy_palette(c->palette);
     c->palette = NULL;
+    destroy_content_list(c->c_list);
+    c->c_list = NULL;
+    free(c->source);
+    c->source = NULL;
     change_state(c,stdin,read_menu);
 }
 void end_command(FILE *fp, char **saveptr, struct context *c){
