@@ -1,7 +1,7 @@
 #include <programstate.h>
 #include <commands.h>
 
-void read_menu(FILE *fp, struct context *c){
+bool read_menu(FILE *fp, struct context *c){
     char *token = NULL;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
@@ -15,8 +15,9 @@ void read_menu(FILE *fp, struct context *c){
             memset(c->line,0,c->linelen);
         }
     }
+    return true;
 }
-void read_parsing(FILE *fp, struct context *c){
+bool read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
     c->c_list = new_content_list();
     struct flags flags;
@@ -25,6 +26,7 @@ void read_parsing(FILE *fp, struct context *c){
     flags.is_reading_shape = false;
     char *token = NULL;
     char **content = NULL;
+    char **new_content_ptr = NULL;
     char *name = NULL;
     int content_height;
     int content_width;
@@ -44,8 +46,17 @@ void read_parsing(FILE *fp, struct context *c){
             else{
                 content_height++;
                 c->line[strlen(c->line)-1] = '\0';
-                content = (char**)realloc(content,content_height*sizeof(char*));
-                content[content_height-1] = (char*)calloc(content_width,sizeof(char));
+                if((new_content_ptr=(char**)realloc(content,content_height*sizeof(char*)))==NULL){
+                    printf("Could not increase content size\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                content = new_content_ptr;
+                if((content[content_height-1] = (char*)calloc(content_width,sizeof(char)))==NULL){
+                    printf("Could not allocate memory for another line\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
                 sprintf(content[content_height-1],"%s",c->line);
             }
         }
@@ -63,7 +74,11 @@ void read_parsing(FILE *fp, struct context *c){
                         }
                         token = strtok(NULL," \n\t");
                         if(token!=NULL){
-                            name = (char*)calloc(scene_width,sizeof(char));
+                            if((name = (char*)calloc(scene_width,sizeof(char)))==NULL){
+                                printf("Could not allocate memory for drawing name\n");
+                                destroy_content(content,content_height);
+                                return false;
+                            }
                             sscanf(token,"%s",name);
                             flags.is_reading_shape = true;
                             content_height = 0;
@@ -128,8 +143,9 @@ void read_parsing(FILE *fp, struct context *c){
         end_command(NULL,NULL,c);
     }
     change_state(c,stdin,read_drawing);
+    return true;
 }
-void read_drawing(FILE *fp, struct context *c){
+bool read_drawing(FILE *fp, struct context *c){
     char *token = NULL;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
@@ -157,6 +173,7 @@ void read_drawing(FILE *fp, struct context *c){
         }
         memset(c->line,0,c->linelen);
     }
+    return true;
 }
 struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
@@ -176,16 +193,17 @@ struct context *new_context(){
     c->c_list = NULL;
     return c;
 }
-void destroy_context(struct context *c){
-    if(!c) return;
+bool destroy_context(struct context *c){
+    if(!c) return false;
     if(c->line) free(c->line);
     if(c->source) free(c->source);
     if(c->scene) destroy_scene(c->scene);
     if(c->palette) destroy_palette(c->palette);
     if(c->c_list) destroy_content_list(c->c_list);
     free(c);
+    return true;
 }
-bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
+bool change_state(struct context *c, FILE *fp, bool(*read)(FILE*,struct context*)){
     if(!(c && read)) return false;
     c->read = read;
     c->read(fp,c);

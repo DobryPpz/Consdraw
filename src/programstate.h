@@ -31,14 +31,14 @@ struct context{
     struct scene *scene;
     struct palette *palette;
     struct content_list *c_list;
-    void(*read)(FILE*,struct context*);
+    bool(*read)(FILE*,struct context*);
 };
 
-void read_menu(FILE *fp, struct context *c);
-void read_parsing(FILE *fp, struct context *c);
-void read_drawing(FILE *fp, struct context *c);
+bool read_menu(FILE *fp, struct context *c);
+bool read_parsing(FILE *fp, struct context *c);
+bool read_drawing(FILE *fp, struct context *c);
 struct context *new_context();
-void destroy_context(struct context *c);
-bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*));
+bool destroy_context(struct context *c);
+bool change_state(struct context *c, FILE *fp, bool(*read)(FILE*,struct context*));
 
 #endif
