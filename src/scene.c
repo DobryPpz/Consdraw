@@ -349,9 +349,12 @@ void show_element(struct scene *s, struct element *el){
     printf("press any key...\n");
     getchar();
 }
-void reverse_elements(struct scene *s){
-    if(!s) return;
-    struct stack *reverser = new_stack();
+bool reverse_elements(struct scene *s){
+    if(!s) return false;
+    struct stack *reverser = NULL;
+    if((reverser=new_stack())==NULL){
+        return false;
+    }
     while(s->head){
         push(reverser,shift(s));
     }
@@ -359,6 +362,7 @@ void reverse_elements(struct scene *s){
         add_to_scene(s,pop(reverser));
     }
     destroy_stack(reverser);
+    return true;
 }
 void reset_tail(struct scene *s){
     if(!s) return;

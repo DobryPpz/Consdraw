@@ -723,7 +723,10 @@ bool show_command(FILE *fp, char **saveptr, struct context *c){
 }
 bool reverse_command(FILE *fp, char **saveptr, struct context *c){
     if(!c) return false;
-    reverse_elements(c->scene);
+    if(!reverse_elements(c->scene)){
+        printf("Could not reverse elements\n");
+        return false;
+    }
     clear_screen(c->scene);
     draw_scene(c->scene);
     return true;
