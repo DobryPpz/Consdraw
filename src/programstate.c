@@ -160,7 +160,14 @@ void read_drawing(FILE *fp, struct context *c){
 }
 struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
+    if(c==NULL){
+        return NULL;
+    }
     c->line = (char*)calloc(128,sizeof(char));
+    if(c->line==NULL){
+        free(c);
+        return NULL;
+    }
     c->linelen = 128;
     c->source = NULL;
     c->palette = NULL;
