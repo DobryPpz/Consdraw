@@ -79,7 +79,7 @@ bool continue_command(FILE *fp, char **saveptr, struct context *c){
                     }
                     return false;
                 }
-                add_content(c->c_list,new_content_node(content,content_width,content_height));
+                add_content(c->c_list,cn);
                 struct drawing *d = NULL;
                 if((d=new_drawing(name,content,content_height,content_width))==NULL){
                     printf("Could not create drawing\n");
@@ -539,7 +539,7 @@ bool circle_command(FILE *fp, char **saveptr, struct context *c){
         destroy_content(content,c->scene->height);
         return false;
     }
-    add_content(c->c_list,new_content_node(content,c->scene->width,c->scene->height));
+    add_content(c->c_list,nc);
     if((el = new_element(name,0,0,props,c->scene->height,c->scene->width,content,CIRCLE))==NULL){
         printf("Could not create new element\n");
         return false;

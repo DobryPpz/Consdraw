@@ -21,6 +21,8 @@ bool read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
     c->c_list = new_content_list();
     struct flags flags;
+    struct content_node *nc = NULL;
+    struct drawing *d = NULL;
     flags.read_width = false;
     flags.read_height = false;
     flags.is_reading_shape = false;
@@ -34,11 +36,24 @@ bool read_parsing(FILE *fp, struct context *c){
     int scene_height;
     while(getline(&c->line,&c->linelen,fp)!=EOF){
         if(flags.is_reading_shape){
-            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && flags.is_reading_shape){
+            if(memcmp(c->line,"end",3)==0 && flags.is_reading_shape){
                 flags.is_reading_shape = false;
-                add_content(c->c_list,new_content_node(content,content_width,content_height));
-                struct drawing *d = new_drawing(name,content,content_height,content_width);
-                add_drawing(c->palette,d);
+                if((nc=new_content_node(content,content_width,content_height))==NULL){
+                    printf("Could not create content node\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                add_content(c->c_list,nc);
+                if((d = new_drawing(name,content,content_height,content_width))==NULL){
+                    printf("Could not create drawing\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                if(!add_drawing(c->palette,d)){
+                    printf("Could not add drawing\n");
+                    destroy_content(content,content_height);
+                    return false;                    
+                }
                 name = NULL;
                 content = NULL;
                 content_height = 0;
