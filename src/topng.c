@@ -4,8 +4,10 @@ void cleanup(png_bytep *row_pointers,
     int height,
     SFT_Font *font,
     unsigned char *pixels){
-        for(int i=0;i<height;i++){
-            free(row_pointers[i]);
+        if(row_pointers!=NULL){
+            for(int i=0;i<height;i++){
+                free(row_pointers[i]);
+            }
         }
         free(row_pointers);
         sft_freefont(font);
@@ -67,23 +69,30 @@ bool put_character(png_bytep *row_pointers,
         return true;
 }
 bool write_png_file(char *filename, struct scene *s, struct params *p){
-    // Initialization of png "canvas"(row_pointers) and filling it with bg color
     int width = s->width*16;
     int height = s->height*16;
-    png_bytep *row_pointers = (png_bytep*)malloc(sizeof(png_bytep)*height);
+    png_bytep *row_pointers = NULL;
+    SFT_Glyph glyph_id;
+    SFT instance;
+    SFT_Image image;
+    unsigned char *pixels = NULL;
+    if((row_pointers=(png_bytep*)malloc(sizeof(png_bytep)*height))==NULL){
+        return false;
+    }
     for(int y=0;y<height;y++){
         row_pointers[y] = (png_byte*)malloc(4*width);
     }
     fill_bg(row_pointers,width,height,p);
-    // Putting characters on row_pointers
     SFT_Font *font = sft_loadfile("/usr/share/fonts/truetype/freefont/FreeMono.ttf");
     if(!font){
         printf("Could not load the font\n");
+        cleanup(row_pointers,height,font,pixels);
         return false;
     }
-    SFT_Glyph glyph_id;
-    SFT instance;
-    SFT_Image image;
+    if((pixels = (unsigned char*)calloc(image.width*image.height,sizeof(unsigned char)))==NULL){
+        printf("Could not create pixels array\n");
+        cleanup(row_pointers,height,font,pixels);
+    }
     instance.font = font;
     instance.xScale = 20;
     instance.yScale = 20;
@@ -92,7 +101,7 @@ bool write_png_file(char *filename, struct scene *s, struct params *p){
     instance.flags = SFT_DOWNWARD_Y;
     image.height = 16;
     image.width = 16;
-    image.pixels = (unsigned char*)calloc(image.width*image.height,sizeof(unsigned char));
+    image.pixels = pixels;
     if(!s->canvas){
         printf("The canvas was not created\n");
         return false;
@@ -116,16 +125,19 @@ bool write_png_file(char *filename, struct scene *s, struct params *p){
     // initializing png writing structures and writing the actual png file
     FILE *fp = fopen(filename,"wb");
     if(!fp){
+        printf("Could not open png file to write to\n");
         cleanup(row_pointers,height,font,image.pixels);
         return false;
     }
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING,NULL,NULL,NULL);
     if(!png){
+        printf("Could not create png write struct\n");
         cleanup(row_pointers,height,font,image.pixels);
         return false;
     }
     png_infop info = png_create_info_struct(png);
     if(!info){
+        printf("Could not create png info struct\n");
         cleanup(row_pointers,height,font,image.pixels);
         return false;
     }

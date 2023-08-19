@@ -47,7 +47,11 @@ struct scene *new_scene(int width, int height){
 struct element *new_element(char *id, int x, int y, struct elem_props props, int content_height, int content_width, char **content, enum content_type type){
     struct element *el = (struct element*)malloc(sizeof(struct element));
     if(el==NULL) return NULL;
-    el->id = (char*)calloc(strlen(id)+1,sizeof(char));
+    if((el->id = (char*)calloc(strlen(id)+1,sizeof(char)))==NULL){
+        printf("Could not create element id line\n");
+        free(el);
+        return NULL;
+    }
     strcpy(el->id,id);
     el->props = props;
     el->type = type;
@@ -345,9 +349,12 @@ void show_element(struct scene *s, struct element *el){
     printf("press any key...\n");
     getchar();
 }
-void reverse_elements(struct scene *s){
-    if(!s) return;
-    struct stack *reverser = new_stack();
+bool reverse_elements(struct scene *s){
+    if(!s) return false;
+    struct stack *reverser = NULL;
+    if((reverser=new_stack())==NULL){
+        return false;
+    }
     while(s->head){
         push(reverser,shift(s));
     }
@@ -355,6 +362,7 @@ void reverse_elements(struct scene *s){
         add_to_scene(s,pop(reverser));
     }
     destroy_stack(reverser);
+    return true;
 }
 void reset_tail(struct scene *s){
     if(!s) return;

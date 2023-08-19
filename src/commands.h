@@ -2,23 +2,23 @@
 #define COMMANDS_H_
 #include <programstate.h>
 
-void load_command(FILE *fp, char **saveptr, struct context *c);
-void continue_command(FILE *fp, char **saveptr, struct context *c);
-void persist_command(FILE *fp, char **saveptr, struct context *c);
-void draw_command(FILE *fp, char **saveptr, struct context *c);
-void line_command(FILE *fp, char **saveptr, struct context *c);
-void circle_command(FILE *fp, char **saveptr, struct context *c);
-void delete_command(FILE *fp, char **saveptr, struct context *c);
-void menu_command(FILE *fp, char **saveptr, struct context *c);
-void end_command(FILE *fp, char **saveptr, struct context *c);
-void move_command(FILE *fp, char **saveptr, struct context *c);
-void down_command(FILE *fp, char **saveptr, struct context *c);
-void up_command(FILE *fp, char **saveptr, struct context *c);
-void bottom_command(FILE *fp, char **saveptr, struct context *c);
-void top_command(FILE *fp, char **saveptr, struct context *c);
-void list_command(FILE *fp, char **saveptr, struct context *c);
-void show_command(FILE *fp, char **saveptr, struct context *c);
-void reverse_command(FILE *fp, char **saveptr, struct context *c);
-void write_png_command(FILE *fp, char **saveptr, struct context *c);
+bool load_command(FILE *fp, char **saveptr, struct context *c);
+bool continue_command(FILE *fp, char **saveptr, struct context *c);
+bool persist_command(FILE *fp, char **saveptr, struct context *c);
+bool draw_command(FILE *fp, char **saveptr, struct context *c);
+bool line_command(FILE *fp, char **saveptr, struct context *c);
+bool circle_command(FILE *fp, char **saveptr, struct context *c);
+bool delete_command(FILE *fp, char **saveptr, struct context *c);
+bool menu_command(FILE *fp, char **saveptr, struct context *c);
+bool end_command(FILE *fp, char **saveptr, struct context *c);
+bool move_command(FILE *fp, char **saveptr, struct context *c);
+bool down_command(FILE *fp, char **saveptr, struct context *c);
+bool up_command(FILE *fp, char **saveptr, struct context *c);
+bool bottom_command(FILE *fp, char **saveptr, struct context *c);
+bool top_command(FILE *fp, char **saveptr, struct context *c);
+bool list_command(FILE *fp, char **saveptr, struct context *c);
+bool show_command(FILE *fp, char **saveptr, struct context *c);
+bool reverse_command(FILE *fp, char **saveptr, struct context *c);
+bool write_png_command(FILE *fp, char **saveptr, struct context *c);
 
 #endif

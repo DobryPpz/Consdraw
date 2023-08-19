@@ -67,7 +67,7 @@ void bottom_element(struct scene *s, struct element *el);
 void top_element(struct scene *s, struct element *el);
 void list_elements(struct scene *s);
 void show_element(struct scene *s, struct element *el);
-void reverse_elements(struct scene *s);
+bool reverse_elements(struct scene *s);
 void reset_tail(struct scene *s);
 
 #endif

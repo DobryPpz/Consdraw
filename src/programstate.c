@@ -1,7 +1,7 @@
 #include <programstate.h>
 #include <commands.h>
 
-void read_menu(FILE *fp, struct context *c){
+bool read_menu(FILE *fp, struct context *c){
     char *token = NULL;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
@@ -15,16 +15,20 @@ void read_menu(FILE *fp, struct context *c){
             memset(c->line,0,c->linelen);
         }
     }
+    return true;
 }
-void read_parsing(FILE *fp, struct context *c){
+bool read_parsing(FILE *fp, struct context *c){
     c->palette = new_palette();
     c->c_list = new_content_list();
     struct flags flags;
+    struct content_node *nc = NULL;
+    struct drawing *d = NULL;
     flags.read_width = false;
     flags.read_height = false;
     flags.is_reading_shape = false;
     char *token = NULL;
     char **content = NULL;
+    char **new_content_ptr = NULL;
     char *name = NULL;
     int content_height;
     int content_width;
@@ -32,11 +36,24 @@ void read_parsing(FILE *fp, struct context *c){
     int scene_height;
     while(getline(&c->line,&c->linelen,fp)!=EOF){
         if(flags.is_reading_shape){
-            if(c->line[0]=='e' && c->line[1]=='n' && c->line[2]=='d' && flags.is_reading_shape){
+            if(memcmp(c->line,"end",3)==0 && flags.is_reading_shape){
                 flags.is_reading_shape = false;
-                add_content(c->c_list,new_content_node(content,content_width,content_height));
-                struct drawing *d = new_drawing(name,content,content_height,content_width);
-                add_drawing(c->palette,d);
+                if((nc=new_content_node(content,content_width,content_height))==NULL){
+                    printf("Could not create content node\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                add_content(c->c_list,nc);
+                if((d = new_drawing(name,content,content_height,content_width))==NULL){
+                    printf("Could not create drawing\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                if(!add_drawing(c->palette,d)){
+                    printf("Could not add drawing\n");
+                    destroy_content(content,content_height);
+                    return false;                    
+                }
                 name = NULL;
                 content = NULL;
                 content_height = 0;
@@ -44,8 +61,17 @@ void read_parsing(FILE *fp, struct context *c){
             else{
                 content_height++;
                 c->line[strlen(c->line)-1] = '\0';
-                content = (char**)realloc(content,content_height*sizeof(char*));
-                content[content_height-1] = (char*)calloc(content_width,sizeof(char));
+                if((new_content_ptr=(char**)realloc(content,content_height*sizeof(char*)))==NULL){
+                    printf("Could not increase content size\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
+                content = new_content_ptr;
+                if((content[content_height-1] = (char*)calloc(content_width,sizeof(char)))==NULL){
+                    printf("Could not allocate memory for another line\n");
+                    destroy_content(content,content_height);
+                    return false;
+                }
                 sprintf(content[content_height-1],"%s",c->line);
             }
         }
@@ -63,7 +89,11 @@ void read_parsing(FILE *fp, struct context *c){
                         }
                         token = strtok(NULL," \n\t");
                         if(token!=NULL){
-                            name = (char*)calloc(scene_width,sizeof(char));
+                            if((name = (char*)calloc(scene_width,sizeof(char)))==NULL){
+                                printf("Could not allocate memory for drawing name\n");
+                                destroy_content(content,content_height);
+                                return false;
+                            }
                             sscanf(token,"%s",name);
                             flags.is_reading_shape = true;
                             content_height = 0;
@@ -128,8 +158,9 @@ void read_parsing(FILE *fp, struct context *c){
         end_command(NULL,NULL,c);
     }
     change_state(c,stdin,read_drawing);
+    return true;
 }
-void read_drawing(FILE *fp, struct context *c){
+bool read_drawing(FILE *fp, struct context *c){
     char *token = NULL;
     char *saveptr = NULL;
     memset(c->line,0,c->linelen);
@@ -157,10 +188,18 @@ void read_drawing(FILE *fp, struct context *c){
         }
         memset(c->line,0,c->linelen);
     }
+    return true;
 }
 struct context *new_context(){
     struct context *c = (struct context*)malloc(sizeof(struct context));
+    if(c==NULL){
+        return NULL;
+    }
     c->line = (char*)calloc(128,sizeof(char));
+    if(c->line==NULL){
+        free(c);
+        return NULL;
+    }
     c->linelen = 128;
     c->source = NULL;
     c->palette = NULL;
@@ -169,16 +208,17 @@ struct context *new_context(){
     c->c_list = NULL;
     return c;
 }
-void destroy_context(struct context *c){
-    if(!c) return;
+bool destroy_context(struct context *c){
+    if(!c) return false;
     if(c->line) free(c->line);
     if(c->source) free(c->source);
     if(c->scene) destroy_scene(c->scene);
     if(c->palette) destroy_palette(c->palette);
     if(c->c_list) destroy_content_list(c->c_list);
     free(c);
+    return true;
 }
-bool change_state(struct context *c, FILE *fp, void(*read)(FILE*,struct context*)){
+bool change_state(struct context *c, FILE *fp, bool(*read)(FILE*,struct context*)){
     if(!(c && read)) return false;
     c->read = read;
     c->read(fp,c);
